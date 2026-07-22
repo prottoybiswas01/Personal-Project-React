@@ -17,6 +17,7 @@ export async function fetchPortfolioData(): Promise<{ data: PortfolioData; isMon
 }
 
 export async function syncGitHubRepositoriesWithDB(): Promise<{ success: boolean; projects?: Project[]; message?: string }> {
+  // First try Express backend API endpoint
   try {
     const res = await fetch(`${API_BASE_URL}/github/sync`);
     if (res.ok) {
@@ -24,8 +25,45 @@ export async function syncGitHubRepositoriesWithDB(): Promise<{ success: boolean
       return { success: true, projects: result.projects, message: result.message };
     }
   } catch (err) {
-    console.error('Error syncing with GitHub:', err);
+    console.warn('Server sync unavailable, falling back to direct GitHub REST API call:', err);
   }
+
+  // Client-side Direct GitHub REST API Fallback
+  try {
+    const response = await fetch('https://api.github.com/users/prottoybiswas01/repos?sort=updated&per_page=100');
+    if (response.ok) {
+      const repos: any[] = await response.json();
+      if (Array.isArray(repos)) {
+        const directProjects: Project[] = repos.map(repo => {
+          const estimatedCommits = Math.max(12, Math.min(80, Math.floor(repo.size / 70) + 15));
+          return {
+            id: `gh-${repo.id}`,
+            title: repo.name.replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
+            subtitle: `Live GitHub Repository (${repo.language || 'Web'})`,
+            description: repo.description || `Public GitHub repository ${repo.full_name}. Updated on ${new Date(repo.updated_at).toLocaleDateString()}.`,
+            category: (repo.language === 'TypeScript' || repo.language === 'JavaScript' ? 'Full Stack' : 'Frontend') as any,
+            techStack: [repo.language || 'JavaScript', 'Git', 'GitHub'],
+            githubUrl: repo.html_url,
+            liveUrl: repo.homepage || '',
+            imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+            commitsCount: estimatedCommits,
+            buildingColor: repo.language?.toLowerCase().includes('script') ? '#38bdf8' : '#a855f7',
+            featured: repo.stargazers_count > 0 || repo.name.toLowerCase().includes('react'),
+            createdAt: repo.created_at ? repo.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+          };
+        });
+
+        return {
+          success: true,
+          projects: directProjects,
+          message: `Directly synced ${directProjects.length} GitHub repositories!`
+        };
+      }
+    }
+  } catch (err) {
+    console.error('Direct GitHub API fetch failed:', err);
+  }
+
   return { success: false, message: 'Could not connect to GitHub API' };
 }
 
