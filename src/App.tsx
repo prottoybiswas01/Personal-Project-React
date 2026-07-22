@@ -10,7 +10,6 @@ import {
   fetchPortfolioData, 
   saveProfileToDB, 
   saveProjectToDB, 
-  pushCommitToDB, 
   saveCityConfigToDB, 
   sendMessageToDB, 
   resetDBToDefaults,
@@ -143,52 +142,6 @@ export function App() {
     setPortfolioData(fresh);
   };
 
-  // Add Commits / Stack 3D Floor to Building
-  const handleAddCommit = async (projectId: string) => {
-    const updatedProjects = portfolioData.projects.map((p) => {
-      if (p.id === projectId) {
-        return {
-          ...p,
-          commitsCount: p.commitsCount + 1,
-        };
-      }
-      return p;
-    });
-
-    const updatedData: PortfolioData = {
-      ...portfolioData,
-      projects: updatedProjects,
-    };
-
-    updatePortfolioData(updatedData);
-    await pushCommitToDB(projectId, 1);
-
-    // Refresh selected project in modal so updated commit count shows live!
-    const target = updatedProjects.find((p) => p.id === projectId);
-    if (target) {
-      setSelectedProject(target);
-    }
-  };
-
-  // Update Live URL for a project from Inspector modal
-  const handleUpdateLiveUrl = async (projectId: string, liveUrl: string) => {
-    const updatedProjects = portfolioData.projects.map((p) => {
-      if (p.id === projectId) {
-        return { ...p, liveUrl };
-      }
-      return p;
-    });
-
-    const updatedData = { ...portfolioData, projects: updatedProjects };
-    updatePortfolioData(updatedData);
-
-    const target = updatedProjects.find((p) => p.id === projectId);
-    if (target) {
-      setSelectedProject(target);
-      await saveProjectToDB(target, false);
-    }
-  };
-
   // Contact Form Message Transmission Handler
   const handleSendMessage = async (msgData: Omit<ContactMessage, 'id' | 'date' | 'read'>) => {
     const newMsg: ContactMessage = {
@@ -305,8 +258,6 @@ export function App() {
       <BuildingInspectorModal
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
-        onAddCommit={handleAddCommit}
-        onUpdateLiveUrl={handleUpdateLiveUrl}
       />
 
       {/* Admin Auth Login Modal */}

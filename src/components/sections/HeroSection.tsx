@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ProfileInfo, Project, CityConfig } from '../../types/portfolio';
 import { CityCanvas } from '../3d/CityCanvas';
-import { ArrowRight, Shield, RefreshCw } from 'lucide-react';
+import { ArrowRight, Shield, RefreshCw, Layers } from 'lucide-react';
 import { playSound } from '../../utils/storage';
 
 interface HeroSectionProps {
@@ -26,6 +26,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   isSyncingGitHub = false,
 }) => {
   const [hoveredProjId, setHoveredProjId] = useState<string | null>(null);
+
+  // 1. Sort projects descending by commits count (most active first!)
+  const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
+  
+  // 2. Filter top 6 most active projects for 3D City Stage
+  const top6Projects = sortedProjects.slice(0, 6);
 
   const totalCommits = projects.reduce((sum, p) => sum + p.commitsCount, 0);
   const totalFloors = projects.reduce((sum, p) => sum + Math.max(3, Math.floor(p.commitsCount / 2)), 0);
@@ -86,7 +92,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="grid grid-cols-3 gap-2 pt-1">
             <div className="p-2.5 rounded-xl glass-panel border border-slate-800 text-center">
               <div className="text-xl font-bold font-mono-code text-sky-400">{projects.length}</div>
-              <div className="text-[10px] text-slate-400 font-mono-code truncate">3D Buildings</div>
+              <div className="text-[10px] text-slate-400 font-mono-code truncate">Total Repos</div>
             </div>
             <div className="p-2.5 rounded-xl glass-panel border border-slate-800 text-center">
               <div className="text-xl font-bold font-mono-code text-purple-400">{totalCommits}</div>
@@ -105,7 +111,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               onClick={() => playSound('click')}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white font-mono-code text-xs font-bold flex items-center gap-2 shadow-lg glow-cyan transition-all"
             >
-              <span>EXPLORE PROJECTS</span>
+              <span>SEE ALL PROJECTS ({projects.length})</span>
               <ArrowRight className="w-4 h-4" />
             </a>
 
@@ -123,16 +129,22 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         </div>
 
-        {/* Right Column: Interactive 3D GitHub City Skyscraper Viewport */}
+        {/* Right Column: Interactive 3D GitHub City Skyscraper Viewport (TOP 6 MOST ACTIVE PROJECTS) */}
         <div className="lg:col-span-7 h-[420px] sm:h-[500px] lg:h-[540px] relative">
           
           <CityCanvas
-            projects={projects}
+            projects={top6Projects}
             cityConfig={cityConfig}
             onSelectProject={onSelectProject}
             hoveredProjectId={hoveredProjId}
             onHoverProject={setHoveredProjId}
           />
+
+          {/* Top 6 Most Active Badge */}
+          <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-xl glass-panel border border-sky-500/40 text-xs font-mono-code text-sky-300 flex items-center gap-1.5 shadow-lg">
+            <Layers className="w-3.5 h-3.5 text-emerald-400" />
+            <span>TOP 6 MOST COMMITTED PROJECTS</span>
+          </div>
 
           {/* Theme Switcher Overlay Bar (positioned bottom-right cleanly) */}
           <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1 p-1 rounded-xl glass-panel border border-slate-800 pointer-events-auto">
