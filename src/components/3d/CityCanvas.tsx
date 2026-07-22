@@ -19,19 +19,19 @@ function createTextLabelTexture(text: string, status: string, colorHex: string):
   const ctx = canvas.getContext('2d');
 
   if (ctx) {
-    // Glassmorphic Label Background
-    ctx.fillStyle = 'rgba(9, 13, 22, 0.92)';
+    // Glassmorphic / Cute Label Background
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
     ctx.beginPath();
-    ctx.roundRect(10, 10, 492, 108, 16);
+    ctx.roundRect(10, 10, 492, 108, 20);
     ctx.fill();
 
     // Glow Border
     ctx.strokeStyle = colorHex || '#38bdf8';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 5;
     ctx.stroke();
 
     // Title Text
-    ctx.font = 'bold 28px "Plus Jakarta Sans", sans-serif';
+    ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.fillText(text.length > 24 ? text.substring(0, 22) + '...' : text, 256, 52);
@@ -47,224 +47,409 @@ function createTextLabelTexture(text: string, status: string, colorHex: string):
   return texture;
 }
 
-// 3D Moving Vehicle Generator for Living City Highway
-function createVehicle(colorHex: string): THREE.Group {
+// 🚗 Cute Cartoon Vehicle Generator
+function createCartoonVehicle(colorHex: string): THREE.Group {
   const vehicleGroup = new THREE.Group();
 
-  // Car Body
-  const bodyGeo = new THREE.BoxGeometry(0.8, 0.4, 1.4);
+  // Car Body (Rounded Box)
+  const bodyGeo = new THREE.BoxGeometry(0.85, 0.45, 1.35);
   const bodyMat = new THREE.MeshStandardMaterial({
     color: parseInt(colorHex, 16),
-    metalness: 0.9,
-    roughness: 0.1,
+    roughness: 0.2,
+    metalness: 0.1,
   });
   const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-  bodyMesh.position.y = 0.3;
+  bodyMesh.position.y = 0.35;
+  bodyMesh.castShadow = true;
   vehicleGroup.add(bodyMesh);
 
-  // Roof / Cabin
-  const cabinGeo = new THREE.BoxGeometry(0.65, 0.3, 0.7);
+  // Cute Bubble Cabin Roof
+  const cabinGeo = new THREE.SphereGeometry(0.42, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2);
   const cabinMat = new THREE.MeshStandardMaterial({
-    color: 0x0f172a,
+    color: 0xffffff,
     roughness: 0.1,
+    transparent: true,
+    opacity: 0.85,
   });
   const cabinMesh = new THREE.Mesh(cabinGeo, cabinMat);
-  cabinMesh.position.set(0, 0.6, -0.1);
+  cabinMesh.position.set(0, 0.55, -0.05);
+  cabinMesh.scale.set(1.1, 0.85, 1.2);
   vehicleGroup.add(cabinMesh);
 
-  // Headlights
-  const lightGeo = new THREE.BoxGeometry(0.2, 0.1, 0.05);
-  const lightMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-  const headlight1 = new THREE.Mesh(lightGeo, lightMat);
-  headlight1.position.set(-0.25, 0.3, 0.7);
-  const headlight2 = new THREE.Mesh(lightGeo, lightMat);
-  headlight2.position.set(0.25, 0.3, 0.7);
-  vehicleGroup.add(headlight1);
-  vehicleGroup.add(headlight2);
+  // Wheels (4 cute black tires)
+  const wheelGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 12);
+  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+  wheelGeo.rotateZ(Math.PI / 2);
 
-  // Taillights
-  const tailMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
-  const taillight1 = new THREE.Mesh(lightGeo, tailMat);
-  taillight1.position.set(-0.25, 0.3, -0.7);
-  const taillight2 = new THREE.Mesh(lightGeo, tailMat);
-  taillight2.position.set(0.25, 0.3, -0.7);
-  vehicleGroup.add(taillight1);
-  vehicleGroup.add(taillight2);
+  [
+    [-0.45, 0.18, 0.4],
+    [0.45, 0.18, 0.4],
+    [-0.45, 0.18, -0.4],
+    [0.45, 0.18, -0.4],
+  ].forEach(([wx, wy, wz]) => {
+    const wMesh = new THREE.Mesh(wheelGeo, wheelMat);
+    wMesh.position.set(wx, wy, wz);
+    vehicleGroup.add(wMesh);
+  });
+
+  // Cute Headlights
+  const lightGeo = new THREE.SphereGeometry(0.08, 8, 8);
+  const lightMat = new THREE.MeshBasicMaterial({ color: 0xfffaed });
+  const h1 = new THREE.Mesh(lightGeo, lightMat);
+  h1.position.set(-0.28, 0.35, 0.68);
+  const h2 = new THREE.Mesh(lightGeo, lightMat);
+  h2.position.set(0.28, 0.35, 0.68);
+  vehicleGroup.add(h1);
+  vehicleGroup.add(h2);
 
   return vehicleGroup;
 }
 
-// 🏙️ ICONIC 3D REAL-WORLD LANDMARK SKYSCRAPER BUILDER
-// (Burj Khalifa Spire, Google Tech HQ, Cyber Spire, Stepped Art Deco, Crystal Prism)
-function createIconicSkyscraper(proj: Project, idx: number): THREE.Group {
+// 🌳 Cute 3D Cartoon Tree Generator
+function createCartoonTree(): THREE.Group {
+  const treeGroup = new THREE.Group();
+
+  // Wooden Trunk
+  const trunkGeo = new THREE.CylinderGeometry(0.14, 0.22, 0.8, 8);
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x795548, roughness: 0.8 });
+  const trunkMesh = new THREE.Mesh(trunkGeo, trunkMat);
+  trunkMesh.position.y = 0.4;
+  trunkMesh.castShadow = true;
+  treeGroup.add(trunkMesh);
+
+  // Foliage Spheres
+  const foliageMat = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.4 });
+  const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 8), foliageMat);
+  f1.position.y = 0.95;
+  f1.castShadow = true;
+  treeGroup.add(f1);
+
+  const f2 = new THREE.Mesh(new THREE.SphereGeometry(0.42, 8, 8), foliageMat);
+  f2.position.y = 1.35;
+  f2.castShadow = true;
+  treeGroup.add(f2);
+
+  return treeGroup;
+}
+
+// 🏡 CUTE 3D CARTOON HOUSE & BUILDING BUILDER
+function createCartoonBuilding(proj: Project, idx: number): THREE.Group {
   const buildingGroup = new THREE.Group();
 
-  const floors = Math.max(4, Math.min(28, Math.floor(proj.commitsCount / 2)));
-  const floorHeight = 0.65;
-  const totalHeight = floors * floorHeight;
+  const floors = Math.max(3, Math.min(20, Math.floor(proj.commitsCount / 2)));
+  const floorHeight = 0.55;
+  const houseHeight = Math.max(1.8, floors * floorHeight);
 
-  // Curated Architectural Color Palettes
-  const palettes = [
-    { glass: 0x38bdf8, frame: 0x0f172a, emissive: 0x0284c7 }, // Sapphire Cyan
-    { glass: 0xa855f7, frame: 0x111827, emissive: 0x7e22ce }, // Royal Neon Purple
-    { glass: 0x10b981, frame: 0x064e3b, emissive: 0x047857 }, // Emerald Crystal
-    { glass: 0xf59e0b, frame: 0x1e293b, emissive: 0xd97706 }, // Gold Champagne
-    { glass: 0xec4899, frame: 0x1f2937, emissive: 0xbe185d }, // Ruby Rose Glass
-    { glass: 0x06b6d4, frame: 0x0f172a, emissive: 0x0e7490 }, // Electric Cyan
+  // Vibrant Cartoon Color Palettes
+  const cartoonPalettes = [
+    { wall: 0xff7675, roof: 0xd63031, trim: 0xfff5f5, door: 0x6c5ce7, window: 0xfff3bf }, // Coral Pink & Ruby Roof
+    { wall: 0x74b9ff, roof: 0x0984e3, trim: 0xe0f2fe, door: 0xfdcb6e, window: 0xfffaed }, // Sky Blue & Royal Blue Roof
+    { wall: 0x55efc4, roof: 0x00b894, trim: 0xe6fffa, door: 0xe17055, window: 0xfff3bf }, // Mint Green & Emerald Roof
+    { wall: 0xffeaa7, roof: 0xe17055, trim: 0xfffbeb, door: 0x6c5ce7, window: 0xfff3bf }, // Sun Yellow & Terracotta Roof
+    { wall: 0xa29bfe, roof: 0x6c5ce7, trim: 0xf3e8ff, door: 0x00b894, window: 0xfffaed }, // Lavender & Purple Roof
+    { wall: 0xffb8b8, roof: 0xc0392b, trim: 0xfff0f0, door: 0x27ae60, window: 0xfff3bf }, // Peach Pink & Cherry Red Roof
   ];
-  const palette = palettes[idx % palettes.length];
-  const customColor = proj.buildingColor ? parseInt(proj.buildingColor.replace('#', '0x')) : palette.glass;
 
-  // 5 Distinct Iconic Landmark Styles
+  const palette = cartoonPalettes[idx % cartoonPalettes.length];
+  const customWallColor = proj.buildingColor ? parseInt(proj.buildingColor.replace('#', '0x')) : palette.wall;
+
+  const wallMat = new THREE.MeshStandardMaterial({
+    color: customWallColor,
+    roughness: 0.3,
+    metalness: 0.05,
+  });
+
+  const roofMat = new THREE.MeshStandardMaterial({
+    color: palette.roof,
+    roughness: 0.4,
+    metalness: 0.05,
+  });
+
+  const trimMat = new THREE.MeshStandardMaterial({
+    color: palette.trim,
+    roughness: 0.3,
+    metalness: 0.1,
+  });
+
+  const doorMat = new THREE.MeshStandardMaterial({
+    color: palette.door,
+    roughness: 0.4,
+    metalness: 0.1,
+  });
+
+  const windowMat = new THREE.MeshStandardMaterial({
+    color: palette.window,
+    emissive: 0xffe066,
+    emissiveIntensity: 0.85,
+    roughness: 0.1,
+  });
+
+  const windowFrameMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.2,
+  });
+
   const styleType = idx % 5;
 
   if (styleType === 0) {
-    // 🗼 LANDMARK 1: BURJ KHALIFA STYLE MEGA-SPIRE (Tapered 4-Tier Cylindrical Spire)
-    const tier1H = totalHeight * 0.4;
-    const tier2H = totalHeight * 0.3;
-    const tier3H = totalHeight * 0.2;
-    const tier4H = totalHeight * 0.1;
+    // 🏠 STYLE 0: CUTE COTTAGE WITH SLOPED PYRAMID ROOF & CHIMNEY
+    const baseW = 2.4;
+    const baseD = 2.4;
 
-    // Tier 1 (Base Cylinder)
-    const t1Geo = new THREE.CylinderGeometry(2.2, 2.6, tier1H, 16);
-    const t1Mat = new THREE.MeshStandardMaterial({ color: 0x0f172a, emissive: customColor, emissiveIntensity: 0.35, roughness: 0.1, metalness: 0.9 });
-    const t1Mesh = new THREE.Mesh(t1Geo, t1Mat);
-    t1Mesh.position.y = 0.2 + tier1H / 2;
-    buildingGroup.add(t1Mesh);
+    // Main House Box Wall
+    const wallGeo = new THREE.BoxGeometry(baseW, houseHeight, baseD);
+    const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+    wallMesh.position.y = 0.2 + houseHeight / 2;
+    wallMesh.castShadow = true;
+    wallMesh.receiveShadow = true;
+    buildingGroup.add(wallMesh);
 
-    // Tier 2 (Middle Spire)
-    const t2Geo = new THREE.CylinderGeometry(1.6, 2.0, tier2H, 16);
-    const t2Mat = new THREE.MeshStandardMaterial({ color: 0x1e293b, emissive: customColor, emissiveIntensity: 0.45, roughness: 0.1, metalness: 0.9 });
-    const t2Mesh = new THREE.Mesh(t2Geo, t2Mat);
-    t2Mesh.position.y = 0.2 + tier1H + tier2H / 2;
-    buildingGroup.add(t2Mesh);
+    // Cute Roof Trim Overhang
+    const trimGeo = new THREE.BoxGeometry(baseW + 0.3, 0.15, baseD + 0.3);
+    const trimMesh = new THREE.Mesh(trimGeo, trimMat);
+    trimMesh.position.y = 0.2 + houseHeight;
+    buildingGroup.add(trimMesh);
 
-    // Tier 3 (Upper Tower)
-    const t3Geo = new THREE.CylinderGeometry(1.0, 1.4, tier3H, 16);
-    const t3Mat = new THREE.MeshStandardMaterial({ color: customColor, emissive: customColor, emissiveIntensity: 0.6, roughness: 0.1, metalness: 0.95 });
-    const t3Mesh = new THREE.Mesh(t3Geo, t3Mat);
-    t3Mesh.position.y = 0.2 + tier1H + tier2H + tier3H / 2;
-    buildingGroup.add(t3Mesh);
+    // Sloped Pyramid Roof
+    const roofH = 1.4;
+    const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (baseW / 2 + 0.2), roofH, 4);
+    const roofMesh = new THREE.Mesh(roofGeo, roofMat);
+    roofMesh.rotation.y = Math.PI / 4;
+    roofMesh.position.y = 0.2 + houseHeight + 0.08 + roofH / 2;
+    roofMesh.castShadow = true;
+    buildingGroup.add(roofMesh);
 
-    // Tier 4 (Rooftop Needle Spire)
-    const t4Geo = new THREE.CylinderGeometry(0.1, 0.8, tier4H + 2.5, 12);
-    const t4Mat = new THREE.MeshBasicMaterial({ color: customColor });
-    const t4Mesh = new THREE.Mesh(t4Geo, t4Mat);
-    t4Mesh.position.y = 0.2 + tier1H + tier2H + tier3H + (tier4H + 2.5) / 2;
-    buildingGroup.add(t4Mesh);
+    // Chimney Box on Roof
+    const chimneyGeo = new THREE.BoxGeometry(0.35, 0.9, 0.35);
+    const chimneyMat = new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.6 });
+    const chimneyMesh = new THREE.Mesh(chimneyGeo, chimneyMat);
+    chimneyMesh.position.set(0.6, 0.2 + houseHeight + roofH * 0.5, 0.4);
+    buildingGroup.add(chimneyMesh);
 
-    // Searchlight Beacon on Spire Apex
-    const beaconGeo = new THREE.SphereGeometry(0.25, 8, 8);
-    const beaconMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
-    beaconMesh.position.y = 0.2 + totalHeight + 3.0;
-    buildingGroup.add(beaconMesh);
+    // Chimney Smoke Puffs (3 cute spheres)
+    for (let s = 0; s < 3; s++) {
+      const smokeGeo = new THREE.SphereGeometry(0.12 + s * 0.06, 8, 8);
+      const smokeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 - s * 0.15 });
+      const smokeMesh = new THREE.Mesh(smokeGeo, smokeMat);
+      smokeMesh.position.set(0.6 + (s % 2 === 0 ? 0.05 : -0.05), 0.2 + houseHeight + roofH * 0.5 + 0.5 + s * 0.25, 0.4);
+      buildingGroup.add(smokeMesh);
+    }
 
-  } else if (styleType === 1) {
-    // 🏢 LANDMARK 2: GOOGLE TECH HQ STYLE MODERN CANTILEVERED GLASS CAMPUS
-    const blockCount = Math.min(5, Math.floor(floors / 4) + 2);
-    const blockH = totalHeight / blockCount;
+    // Front Door & Window
+    const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.08);
+    const doorMesh = new THREE.Mesh(doorGeo, doorMat);
+    doorMesh.position.set(0, 0.2 + 0.45, baseD / 2 + 0.04);
+    buildingGroup.add(doorMesh);
 
-    for (let b = 0; b < blockCount; b++) {
-      const offsetX = (b % 2 === 0 ? 0.3 : -0.3);
-      const offsetZ = (b % 3 === 0 ? 0.2 : -0.2);
-      const blockGeo = new THREE.BoxGeometry(2.4, blockH * 0.92, 2.4);
-      
-      const blockMat = new THREE.MeshStandardMaterial({
-        color: (b % 2 === 0 ? customColor : 0x0f172a),
-        emissive: customColor,
-        emissiveIntensity: (b % 2 === 0 ? 0.6 : 0.25),
-        roughness: 0.1,
-        metalness: 0.95
-      });
-      const blockMesh = new THREE.Mesh(blockGeo, blockMat);
-      blockMesh.position.set(offsetX, 0.2 + b * blockH + blockH / 2, offsetZ);
-      blockMesh.castShadow = true;
-      buildingGroup.add(blockMesh);
+    // Golden Knob
+    const knobGeo = new THREE.SphereGeometry(0.04, 8, 8);
+    const knobMat = new THREE.MeshStandardMaterial({ color: 0xfdcb6e, metalness: 0.9 });
+    const knobMesh = new THREE.Mesh(knobGeo, knobMat);
+    knobMesh.position.set(0.18, 0.2 + 0.45, baseD / 2 + 0.09);
+    buildingGroup.add(knobMesh);
 
-      // Connecting Glass Bridges
-      if (b > 0) {
-        const bridgeGeo = new THREE.BoxGeometry(0.8, 0.3, 0.8);
-        const bridgeMat = new THREE.MeshBasicMaterial({ color: customColor });
-        const bridgeMesh = new THREE.Mesh(bridgeGeo, bridgeMat);
-        bridgeMesh.position.set(0, 0.2 + b * blockH, 0);
-        buildingGroup.add(bridgeMesh);
+    // Windows on multiple floors
+    const windowRows = Math.max(1, Math.floor(houseHeight / 0.8));
+    for (let r = 0; r < windowRows; r++) {
+      const winY = 0.2 + 0.7 + r * 0.75;
+      if (winY < 0.2 + houseHeight - 0.3) {
+        // Front windows
+        [-0.65, 0.65].forEach((wx) => {
+          const frameGeo = new THREE.BoxGeometry(0.42, 0.48, 0.06);
+          const frameMesh = new THREE.Mesh(frameGeo, windowFrameMat);
+          frameMesh.position.set(wx, winY, baseD / 2 + 0.03);
+          buildingGroup.add(frameMesh);
+
+          const winGeo = new THREE.BoxGeometry(0.34, 0.40, 0.08);
+          const winMesh = new THREE.Mesh(winGeo, windowMat);
+          winMesh.position.set(wx, winY, baseD / 2 + 0.04);
+          buildingGroup.add(winMesh);
+        });
       }
     }
 
+  } else if (styleType === 1) {
+    // 🗼 STYLE 1: CUTE CARTOON CLOCKTOWER / WINDMILL TOWER WITH CONICAL ROOF
+    const radius = 1.3;
+    
+    // Bottom Module
+    const botH = houseHeight * 0.6;
+    const botGeo = new THREE.CylinderGeometry(radius, radius + 0.2, botH, 16);
+    const botMesh = new THREE.Mesh(botGeo, wallMat);
+    botMesh.position.y = 0.2 + botH / 2;
+    botMesh.castShadow = true;
+    buildingGroup.add(botMesh);
+
+    // Mid Wooden Trim Ring
+    const trimRingGeo = new THREE.CylinderGeometry(radius + 0.25, radius + 0.25, 0.18, 16);
+    const trimRingMesh = new THREE.Mesh(trimRingGeo, trimMat);
+    trimRingMesh.position.y = 0.2 + botH;
+    buildingGroup.add(trimRingMesh);
+
+    // Upper Module
+    const topH = houseHeight * 0.4;
+    const topGeo = new THREE.CylinderGeometry(radius - 0.2, radius, topH, 16);
+    const topMesh = new THREE.Mesh(topGeo, wallMat);
+    topMesh.position.y = 0.2 + botH + topH / 2;
+    buildingGroup.add(topMesh);
+
+    // Conical Roof
+    const coneH = 1.5;
+    const coneGeo = new THREE.CylinderGeometry(0, radius + 0.2, coneH, 16);
+    const coneMesh = new THREE.Mesh(coneGeo, roofMat);
+    coneMesh.position.y = 0.2 + houseHeight + coneH / 2;
+    coneMesh.castShadow = true;
+    buildingGroup.add(coneMesh);
+
+    // Weathercock / Flag Pole Apex
+    const poleGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.8, 8);
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0xfdcb6e, metalness: 0.8 });
+    const poleMesh = new THREE.Mesh(poleGeo, poleMat);
+    poleMesh.position.y = 0.2 + houseHeight + coneH + 0.4;
+    buildingGroup.add(poleMesh);
+
+    // Cute Flag
+    const flagGeo = new THREE.BoxGeometry(0.35, 0.2, 0.02);
+    const flagMat = new THREE.MeshStandardMaterial({ color: 0xef4444 });
+    const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+    flagMesh.position.set(0.18, 0.2 + houseHeight + coneH + 0.6, 0);
+    buildingGroup.add(flagMesh);
+
+    // Clock Face on Upper Module
+    const clockGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.05, 16);
+    const clockMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
+    const clockMesh = new THREE.Mesh(clockGeo, clockMat);
+    clockMesh.rotation.x = Math.PI / 2;
+    clockMesh.position.set(0, 0.2 + botH + topH / 2, radius - 0.15);
+    buildingGroup.add(clockMesh);
+
   } else if (styleType === 2) {
-    // 🌐 LANDMARK 3: CYBER SPIRE HIGH-TECH LATTICE SKYSCRAPER
-    const bodyGeo = new THREE.BoxGeometry(2.2, totalHeight, 2.2);
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: 0x090d16,
-      emissive: customColor,
-      emissiveIntensity: 0.5,
-      metalness: 0.9,
-      roughness: 0.1
-    });
-    const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-    bodyMesh.position.y = 0.2 + totalHeight / 2;
-    buildingGroup.add(bodyMesh);
+    // 🏪 STYLE 2: CUTE CARTOON BAKERY / CAFE WITH STRIPED AWNING
+    const baseW = 2.5;
+    const baseD = 2.2;
 
-    // Outer Diagonal Steel Lattice Cage
-    const cageGeo = new THREE.BoxGeometry(2.38, totalHeight, 2.38);
-    const cageMat = new THREE.MeshStandardMaterial({
-      color: customColor,
-      wireframe: true
-    });
-    const cageMesh = new THREE.Mesh(cageGeo, cageMat);
-    cageMesh.position.y = 0.2 + totalHeight / 2;
-    buildingGroup.add(cageMesh);
+    const wallGeo = new THREE.BoxGeometry(baseW, houseHeight, baseD);
+    const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+    wallMesh.position.y = 0.2 + houseHeight / 2;
+    wallMesh.castShadow = true;
+    buildingGroup.add(wallMesh);
 
-    // Rooftop Helipad
-    const helipadGeo = new THREE.CylinderGeometry(1.3, 1.3, 0.15, 24);
-    const helipadMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9 });
-    const helipadMesh = new THREE.Mesh(helipadGeo, helipadMat);
-    helipadMesh.position.y = 0.2 + totalHeight + 0.1;
-    buildingGroup.add(helipadMesh);
+    // Striped Awning Over Entrance
+    const awningW = 2.0;
+    const awningGeo = new THREE.BoxGeometry(awningW, 0.12, 0.6);
+    const awningMat = new THREE.MeshStandardMaterial({ color: palette.roof, roughness: 0.3 });
+    const awningMesh = new THREE.Mesh(awningGeo, awningMat);
+    awningMesh.rotation.x = 0.2;
+    awningMesh.position.set(0, 0.2 + 1.1, baseD / 2 + 0.25);
+    buildingGroup.add(awningMesh);
 
-    // Helipad Landing Light Ring
-    const ringGeo = new THREE.TorusGeometry(1.2, 0.05, 8, 24);
-    const ringMat = new THREE.MeshBasicMaterial({ color: customColor });
-    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-    ringMesh.rotation.x = Math.PI / 2;
-    ringMesh.position.y = 0.2 + totalHeight + 0.2;
-    buildingGroup.add(ringMesh);
+    // Awning White Stripe Detail
+    for (let s = -3; s <= 3; s += 2) {
+      const stripeGeo = new THREE.BoxGeometry(0.25, 0.14, 0.62);
+      const stripeMesh = new THREE.Mesh(stripeGeo, trimMat);
+      stripeMesh.rotation.x = 0.2;
+      stripeMesh.position.set(s * 0.26, 0.2 + 1.1, baseD / 2 + 0.25);
+      buildingGroup.add(stripeMesh);
+    }
+
+    // Flat Terrace Roof Edge Balustrade
+    const railGeo = new THREE.BoxGeometry(baseW + 0.1, 0.25, baseD + 0.1);
+    const railMesh = new THREE.Mesh(railGeo, trimMat);
+    railMesh.position.y = 0.2 + houseHeight + 0.12;
+    buildingGroup.add(railMesh);
+
+    // Rooftop Water Tank / Bush
+    const tankGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.7, 12);
+    const tankMat = new THREE.MeshStandardMaterial({ color: 0x795548 });
+    const tankMesh = new THREE.Mesh(tankGeo, tankMat);
+    tankMesh.position.set(-0.6, 0.2 + houseHeight + 0.5, -0.4);
+    buildingGroup.add(tankMesh);
+
+    // Front Shop Door
+    const doorGeo = new THREE.BoxGeometry(0.6, 0.9, 0.08);
+    const doorMesh = new THREE.Mesh(doorGeo, doorMat);
+    doorMesh.position.set(0, 0.2 + 0.45, baseD / 2 + 0.04);
+    buildingGroup.add(doorMesh);
 
   } else if (styleType === 3) {
-    // 🏛️ LANDMARK 4: STEPPED ART-DECO GLASS & COPPER TOWER
-    for (let f = 0; f < floors; f++) {
-      const width = 2.5 - f * 0.04;
-      const depth = 2.5 - f * 0.04;
-      const floorGeo = new THREE.BoxGeometry(width, floorHeight * 0.9, depth);
-      
-      const isTop = f === floors - 1;
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: isTop ? customColor : (f % 2 === 0 ? 0x1e293b : 0x0f172a),
-        emissive: isTop ? customColor : (f % 2 === 0 ? customColor : 0x000000),
-        emissiveIntensity: isTop ? 0.8 : 0.35,
-        roughness: 0.2,
-        metalness: 0.8,
-      });
+    // 🏛️ STYLE 3: CUTE DUTCH STEP-GABLE TOWN HOUSE
+    const baseW = 2.2;
+    const baseD = 2.4;
 
-      const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-      floorMesh.position.y = 0.4 + f * floorHeight + floorHeight / 2;
-      buildingGroup.add(floorMesh);
+    // Wall Box
+    const wallGeo = new THREE.BoxGeometry(baseW, houseHeight, baseD);
+    const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+    wallMesh.position.y = 0.2 + houseHeight / 2;
+    wallMesh.castShadow = true;
+    buildingGroup.add(wallMesh);
+
+    // Stepped Facade Top Gable (Dutch Gable Steps)
+    for (let st = 0; st < 3; st++) {
+      const stepW = baseW - st * 0.5;
+      const stepH = 0.35;
+      const stepGeo = new THREE.BoxGeometry(stepW, stepH, baseD + 0.05);
+      const stepMesh = new THREE.Mesh(stepGeo, trimMat);
+      stepMesh.position.y = 0.2 + houseHeight + st * stepH + stepH / 2;
+      buildingGroup.add(stepMesh);
     }
+
+    // Cozy Round Attic Window
+    const roundWinGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.08, 16);
+    const roundWinMesh = new THREE.Mesh(roundWinGeo, windowMat);
+    roundWinMesh.rotation.x = Math.PI / 2;
+    roundWinMesh.position.set(0, 0.2 + houseHeight + 0.4, baseD / 2 + 0.04);
+    buildingGroup.add(roundWinMesh);
+
+    // Main Arched Door
+    const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.08);
+    const doorMesh = new THREE.Mesh(doorGeo, doorMat);
+    doorMesh.position.set(0, 0.2 + 0.45, baseD / 2 + 0.04);
+    buildingGroup.add(doorMesh);
+
   } else {
-    // 💎 LANDMARK 5: CRYSTAL DIAMOND FACET TOWER
-    const prismGeo = new THREE.CylinderGeometry(0.7, 1.7, totalHeight, 8);
-    const prismMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      emissive: customColor,
-      emissiveIntensity: 0.65,
-      metalness: 0.95,
-      roughness: 0.05,
-      flatShading: true
-    });
-    const prismMesh = new THREE.Mesh(prismGeo, prismMat);
-    prismMesh.position.y = 0.2 + totalHeight / 2;
-    buildingGroup.add(prismMesh);
+    // 🏰 STYLE 4: CUTE CARTOON APARTMENT TOWER WITH DOMED CAPS & BALCONIES
+    const baseW = 2.3;
+    const baseD = 2.3;
+
+    const wallGeo = new THREE.BoxGeometry(baseW, houseHeight, baseD);
+    const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+    wallMesh.position.y = 0.2 + houseHeight / 2;
+    wallMesh.castShadow = true;
+    buildingGroup.add(wallMesh);
+
+    // Cute Dome Roof Cap
+    const domeRadius = 1.1;
+    const domeGeo = new THREE.SphereGeometry(domeRadius, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+    const domeMesh = new THREE.Mesh(domeGeo, roofMat);
+    domeMesh.position.y = 0.2 + houseHeight;
+    domeMesh.castShadow = true;
+    buildingGroup.add(domeMesh);
+
+    // Dome Star/Spire
+    const starGeo = new THREE.OctahedronGeometry(0.22);
+    const starMat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffb700, emissiveIntensity: 0.8 });
+    const starMesh = new THREE.Mesh(starGeo, starMat);
+    starMesh.position.y = 0.2 + houseHeight + domeRadius + 0.2;
+    buildingGroup.add(starMesh);
+
+    // Front Windows & Balcony Trims
+    const floorsCount = Math.max(2, Math.floor(houseHeight / 0.7));
+    for (let f = 0; f < floorsCount; f++) {
+      const winY = 0.2 + 0.5 + f * 0.7;
+      if (winY < 0.2 + houseHeight - 0.2) {
+        // Balcony Trim
+        const balcGeo = new THREE.BoxGeometry(1.4, 0.12, 0.25);
+        const balcMesh = new THREE.Mesh(balcGeo, trimMat);
+        balcMesh.position.set(0, winY - 0.25, baseD / 2 + 0.1);
+        buildingGroup.add(balcMesh);
+
+        // Window
+        const winGeo = new THREE.BoxGeometry(0.8, 0.42, 0.08);
+        const winMesh = new THREE.Mesh(winGeo, windowMat);
+        winMesh.position.set(0, winY, baseD / 2 + 0.04);
+        buildingGroup.add(winMesh);
+      }
+    }
   }
 
   return buildingGroup;
@@ -289,11 +474,11 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
   // Theme color maps
   const themeColors = {
-    cyberpunk: { sky: 0x090d16, grid: 0x38bdf8, light1: 0x38bdf8, light2: 0xa855f7 },
-    matrix: { sky: 0x05140b, grid: 0x10b981, light1: 0x10b981, light2: 0x34d399 },
-    sunset: { sky: 0x190b14, grid: 0xf59e0b, light1: 0xf59e0b, light2: 0xec4899 },
-    diamond: { sky: 0x0f172a, grid: 0x64748b, light1: 0x38bdf8, light2: 0xf8fafc },
-    'neon-blue': { sky: 0x020617, grid: 0x06b6d4, light1: 0x06b6d4, light2: 0x3b82f6 },
+    cyberpunk: { sky: 0x0f172a, grid: 0x38bdf8, grass: 0x10b981, light1: 0xfffaed, light2: 0x38bdf8 },
+    matrix: { sky: 0x05140b, grid: 0x10b981, grass: 0x059669, light1: 0xfffaed, light2: 0x34d399 },
+    sunset: { sky: 0x190b14, grid: 0xf59e0b, grass: 0xd97706, light1: 0xffedd5, light2: 0xec4899 },
+    diamond: { sky: 0x0f172a, grid: 0x64748b, grass: 0x2563eb, light1: 0xfffaed, light2: 0x94a3b8 },
+    'neon-blue': { sky: 0x020617, grid: 0x06b6d4, grass: 0x0284c7, light1: 0xfffaed, light2: 0x3b82f6 },
   };
 
   useEffect(() => {
@@ -307,7 +492,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     const currentTheme = themeColors[cityConfig.theme] || themeColors.cyberpunk;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(currentTheme.sky);
-    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.009);
+    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.007);
     sceneRef.current = scene;
 
     // 2. Camera setup
@@ -326,33 +511,35 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // 4. Ambient & Directional Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    // 4. Warm Sunny Ambient & Directional Sun Lights
+    const ambientLight = new THREE.AmbientLight(0xfffaed, 1.2);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(currentTheme.light1, 1.6);
+    const dirLight = new THREE.DirectionalLight(0xfff3bf, 1.8);
     dirLight.position.set(35, 45, 25);
     dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
     scene.add(dirLight);
 
-    const pointLight = new THREE.PointLight(currentTheme.light2, 3, 70);
+    const pointLight = new THREE.PointLight(currentTheme.light2, 2.5, 70);
     pointLight.position.set(-15, 25, -15);
     scene.add(pointLight);
 
-    // 5. City Roads & Ground Layout
+    // 5. Cartoon Ground & Road Layout
     if (cityConfig.showGrid) {
-      const gridHelper = new THREE.GridHelper(90, 60, currentTheme.grid, 0x1e293b);
-      gridHelper.position.y = 0;
+      const gridHelper = new THREE.GridHelper(90, 60, currentTheme.grid, 0x334155);
+      gridHelper.position.y = 0.01;
       scene.add(gridHelper);
     }
 
-    // Circular City Highway Ring
+    // Circular Highway Ring for Cute Cars
     const roadInner = 12;
     const roadOuter = 16;
     const roadGeo = new THREE.RingGeometry(roadInner, roadOuter, 64);
     const roadMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.8,
+      color: 0x334155,
+      roughness: 0.6,
       side: THREE.DoubleSide
     });
     const roadMesh = new THREE.Mesh(roadGeo, roadMat);
@@ -360,29 +547,29 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     roadMesh.position.y = 0.02;
     scene.add(roadMesh);
 
-    // Road Lane Divider Ring (Glowing Yellow/Cyan)
+    // Road Lane Divider Ring
     const laneGeo = new THREE.RingGeometry(13.9, 14.1, 64);
-    const laneMat = new THREE.MeshBasicMaterial({ color: currentTheme.grid, side: THREE.DoubleSide });
+    const laneMat = new THREE.MeshBasicMaterial({ color: 0xfdcb6e, side: THREE.DoubleSide });
     const laneMesh = new THREE.Mesh(laneGeo, laneMat);
     laneMesh.rotation.x = Math.PI / 2;
     laneMesh.position.y = 0.03;
     scene.add(laneMesh);
 
-    // Ground platform disc
+    // Lush Cartoon Grass Ground Disc
     const groundGeo = new THREE.CylinderGeometry(42, 44, 0.4, 48);
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x090d16,
-      roughness: 0.4,
-      metalness: 0.8,
+      color: currentTheme.grass,
+      roughness: 0.6,
+      metalness: 0.05,
     });
     const groundMesh = new THREE.Mesh(groundGeo, groundMat);
     groundMesh.position.y = -0.2;
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // 6. Particle Starfield Atmosphere
+    // 6. Particle Atmosphere
     if (cityConfig.showParticles) {
-      const particleCount = 600;
+      const particleCount = 500;
       const geometry = new THREE.BufferGeometry();
       const positions = new Float32Array(particleCount * 3);
       for (let i = 0; i < particleCount * 3; i += 3) {
@@ -393,7 +580,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       const material = new THREE.PointsMaterial({
         color: currentTheme.grid,
-        size: 0.3,
+        size: 0.35,
         transparent: true,
         opacity: 0.6,
       });
@@ -402,18 +589,15 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       particlesRef.current = particles;
     }
 
-    // 7. Render Iconic Architectural 3D Skyscraper Landmarks
+    // 7. Render Cute 3D Cartoon Houses & Neighborhood Buildings
     buildingMeshesRef.current = [];
-
-    // Sort projects by commit count to rank them
     const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
 
     sortedProjects.forEach((proj, idx) => {
-      // Concentric city layout rings
+      // Concentric layout rings
       const ringIndex = Math.floor(idx / 8);
       const posInRing = idx % 8;
       
-      // Skip the road lane radius (12-16)
       let ringRadius = 6 + ringIndex * 5;
       if (ringRadius >= 11 && ringRadius <= 17) {
         ringRadius = 18 + (ringIndex - 2) * 5;
@@ -423,26 +607,33 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const x = Math.cos(angle) * ringRadius;
       const z = Math.sin(angle) * ringRadius;
 
-      // Build Iconic Architectural Skyscraper
-      const buildingGroup = createIconicSkyscraper(proj, idx);
+      // Create Cute Cartoon House/Building
+      const buildingGroup = createCartoonBuilding(proj, idx);
       buildingGroup.position.set(x, 0, z);
 
-      const floors = Math.max(4, Math.min(28, Math.floor(proj.commitsCount / 2)));
-      const totalHeight = floors * 0.65;
+      const floors = Math.max(3, Math.min(20, Math.floor(proj.commitsCount / 2)));
+      const houseHeight = Math.max(1.8, floors * 0.55);
       const buildingColorHex = proj.buildingColor || '#38bdf8';
 
       // Floating 3D Building Project Name Banner Above Building
       const labelText = proj.title;
-      const statusBadge = `🏢 ${proj.category.toUpperCase()} • ${proj.commitsCount} COMMITS`;
+      const statusBadge = `🏠 CARTOON HOUSE • ${proj.commitsCount} COMMITS`;
 
       const texture = createTextLabelTexture(labelText, statusBadge, buildingColorHex);
       const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
       const labelSprite = new THREE.Sprite(spriteMat);
-      labelSprite.position.set(0, 0.4 + totalHeight + 3.2, 0);
-      labelSprite.scale.set(7.5, 1.85, 1);
+      labelSprite.position.set(0, 0.4 + houseHeight + 2.4, 0);
+      labelSprite.scale.set(7.2, 1.8, 1);
       buildingGroup.add(labelSprite);
 
       scene.add(buildingGroup);
+
+      // Add cute cartoon trees near the house!
+      if (idx % 2 === 0) {
+        const treeMesh = createCartoonTree();
+        treeMesh.position.set(x + 2.0, 0, z + 1.2);
+        scene.add(treeMesh);
+      }
 
       buildingMeshesRef.current.push({
         id: proj.id,
@@ -452,14 +643,14 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       });
     });
 
-    // 8. Animated 3D City Vehicles / Traffic Flow on Circular Highway
+    // 8. Animated 3D Cute Cartoon Vehicles driving on highway
     vehiclesRef.current = [];
-    const carColors = ['38bdf8', 'ef4444', '10b981', 'f59e0b', 'a855f7', 'f8fafc'];
+    const carColors = ['38bdf8', 'ef4444', '10b981', 'f59e0b', 'a855f7', 'fdcb6e'];
     for (let c = 0; c < 8; c++) {
       const carColor = carColors[c % carColors.length];
-      const carMesh = createVehicle(carColor);
+      const carMesh = createCartoonVehicle(carColor);
       const angle = (c / 8) * Math.PI * 2;
-      const radius = 14; // Driving along the highway ring
+      const radius = 14;
 
       carMesh.position.set(Math.cos(angle) * radius, 0.05, Math.sin(angle) * radius);
       carMesh.rotation.y = -angle + Math.PI / 2;
@@ -659,7 +850,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>🌐</span> City Overview
+          <span>🌐</span> Neighborhood Overview
         </button>
         <button
           onClick={() => resetCamera('street')}
@@ -669,7 +860,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>🚗</span> Traffic & Street Level
+          <span>🚗</span> Street Level
         </button>
         <button
           onClick={() => resetCamera('drone')}
@@ -679,7 +870,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>🏢</span> Architectural Drone View
+          <span>🏠</span> Drone View
         </button>
       </div>
 
@@ -687,16 +878,16 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       <div className="absolute bottom-3 left-3 z-10 p-2.5 rounded-xl glass-panel border border-slate-700/60 text-xs font-mono-code pointer-events-auto hidden sm:block">
         <div className="flex items-center gap-2 text-sky-400 font-bold mb-1">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          3D ARCHITECTURAL LANDMARK METROPOLIS
+          3D CARTOON TOWN & NEIGHBORHOOD
         </div>
         <p className="text-slate-400 text-[10px]">
-          • Iconic Landmarks: Burj Khalifa Spire, Google Tech HQ, Cyber Spire & Glass Towers
+          • Cute Cartoon Houses: Cottages, Clocktowers, Bakeries & Apartments
         </p>
         <p className="text-slate-400 text-[10px]">
-          • Inspect: Click any 3D Building
+          • Inspect: Click any 3D Cartoon House
         </p>
         <div className="mt-1.5 pt-1.5 border-t border-slate-800 flex items-center gap-2 text-slate-300 text-[11px]">
-          <span>Buildings: <strong className="text-sky-300">{projects.length}</strong></span>
+          <span>Houses: <strong className="text-sky-300">{projects.length}</strong></span>
           <span>Theme: <strong className="text-purple-400 capitalize">{cityConfig.theme}</strong></span>
         </div>
       </div>
