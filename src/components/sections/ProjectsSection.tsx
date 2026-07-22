@@ -19,7 +19,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   onOpenAllProjectsModal,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const showAllGrid = true;
+  const [showAllGrid, setShowAllGrid] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // 1. Sort projects descending by commits count (most committed projects rank highest!)
@@ -37,7 +37,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
     return matchesCategory && matchesQuery;
   });
 
-  // 3. Grid display logic: Show top 6 or expand to show all projects!
+  // 3. Grid display logic: Show top 6 by default or all when expanded!
   const displayedProjects = showAllGrid ? filteredProjects : filteredProjects.slice(0, 6);
 
   const categories = ['All', 'Full Stack', 'Frontend', 'Backend', 'UI/UX'];
@@ -61,6 +61,17 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         </p>
 
         <div className="pt-2 flex justify-center gap-3 flex-wrap">
+          <button
+            onClick={() => {
+              playSound('click');
+              setShowAllGrid(!showAllGrid);
+            }}
+            className="px-4 py-2 rounded-xl bg-sky-950/70 hover:bg-sky-900/90 text-sky-300 border border-sky-500/50 text-xs font-mono-code font-bold flex items-center gap-2 shadow-lg transition-all"
+          >
+            <Layers className="w-4 h-4 text-sky-400" />
+            <span>{showAllGrid ? 'SHOW TOP 6 PROJECTS ONLY' : `VIEW ALL ${projects.length} PROJECTS IN GRID`}</span>
+          </button>
+
           <button
             onClick={() => {
               playSound('click');

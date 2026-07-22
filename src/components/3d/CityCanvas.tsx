@@ -14,31 +14,34 @@ interface CityCanvasProps {
 // Floating Signboard Canvas Texture for Project Names
 function createProjectSignboardTexture(title: string, commits: number, floors: number, colorHex: string): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 130;
+  canvas.width = 1024;
+  canvas.height = 260;
   const ctx = canvas.getContext('2d');
 
   if (ctx) {
     ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
     ctx.beginPath();
-    ctx.roundRect(10, 10, 492, 110, 20);
+    ctx.roundRect(20, 20, 984, 220, 40);
     ctx.fill();
 
     ctx.strokeStyle = colorHex || '#38bdf8';
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 10;
     ctx.stroke();
 
-    ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+    ctx.font = 'bold 52px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText(title.length > 24 ? textTruncate(title, 22) : title, 256, 52);
+    ctx.fillText(title.length > 24 ? textTruncate(title, 22) : title, 512, 104);
 
-    ctx.font = 'bold 18px "Fira Code", monospace';
+    ctx.font = 'bold 36px "Fira Code", monospace';
     ctx.fillStyle = colorHex || '#38bdf8';
-    ctx.fillText(`🏢 ${floors} FLOORS • ${commits} COMMITS`, 256, 92);
+    ctx.fillText(`🏢 ${floors} FLOORS • ${commits} COMMITS`, 512, 184);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
   texture.needsUpdate = true;
   return texture;
 }
@@ -205,37 +208,86 @@ function createSuburbanCar(colorHex: string): THREE.Group {
   return carGroup;
 }
 
-// 🌳 Detailed Neighborhood Tree Generator
-function createNeighborhoodTree(type: 'oak' | 'pine'): THREE.Group {
+// 🌳 Detailed Rich Neighborhood Tree & Greenery Generator (Multiple Natural Varieties)
+function createNeighborhoodTree(type: 'oak' | 'pine' | 'sakura' | 'cypress' | 'bush' | 'flowering'): THREE.Group {
   const treeGroup = new THREE.Group();
 
-  const trunkGeo = new THREE.CylinderGeometry(0.14, 0.22, 1.0, 8);
-  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.8 });
+  if (type === 'bush') {
+    const bushMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.7 });
+    const flowerMat = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.5 });
+    
+    const b1 = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), bushMat);
+    b1.position.set(0, 0.3, 0);
+    b1.castShadow = true;
+    treeGroup.add(b1);
+
+    const b2 = new THREE.Mesh(new THREE.SphereGeometry(0.3, 6, 6), bushMat);
+    b2.position.set(0.25, 0.25, 0.15);
+    b2.castShadow = true;
+    treeGroup.add(b2);
+
+    // Tiny decorative flower accents
+    for (let f = 0; f < 3; f++) {
+      const fl = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), flowerMat);
+      fl.position.set((Math.random() - 0.5) * 0.4, 0.35 + Math.random() * 0.2, (Math.random() - 0.5) * 0.4);
+      treeGroup.add(fl);
+    }
+    return treeGroup;
+  }
+
+  // Trunk
+  const trunkHeight = type === 'cypress' ? 1.6 : 1.0;
+  const trunkGeo = new THREE.CylinderGeometry(0.12, 0.2, trunkHeight, 8);
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2e1b, roughness: 0.8 });
   const trunkMesh = new THREE.Mesh(trunkGeo, trunkMat);
-  trunkMesh.position.y = 0.5;
+  trunkMesh.position.y = trunkHeight / 2;
   trunkMesh.castShadow = true;
   treeGroup.add(trunkMesh);
 
   if (type === 'oak') {
-    const leafMat = new THREE.MeshStandardMaterial({ color: 0x276749, roughness: 0.5 });
-    const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.65, 10, 10), leafMat);
-    f1.position.y = 1.1;
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.5 });
+    const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.75, 10, 10), leafMat);
+    f1.position.y = 1.3;
     f1.castShadow = true;
     treeGroup.add(f1);
 
-    const f2 = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), leafMat);
-    f2.position.set(0.2, 1.5, -0.1);
+    const f2 = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 8), leafMat);
+    f2.position.set(0.25, 1.7, -0.15);
     f2.castShadow = true;
     treeGroup.add(f2);
-  } else {
-    const pineMat = new THREE.MeshStandardMaterial({ color: 0x1c4532, roughness: 0.5 });
-    for (let p = 0; p < 3; p++) {
-      const coneGeo = new THREE.CylinderGeometry(0, 0.75 - p * 0.18, 0.7, 8);
+  } else if (type === 'pine') {
+    const pineMat = new THREE.MeshStandardMaterial({ color: 0x064e3b, roughness: 0.5 });
+    for (let p = 0; p < 4; p++) {
+      const coneGeo = new THREE.CylinderGeometry(0, 0.85 - p * 0.18, 0.7, 8);
       const coneMesh = new THREE.Mesh(coneGeo, pineMat);
-      coneMesh.position.y = 1.0 + p * 0.45;
+      coneMesh.position.y = 0.9 + p * 0.45;
       coneMesh.castShadow = true;
       treeGroup.add(coneMesh);
     }
+  } else if (type === 'sakura') {
+    const sakuraMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.4 });
+    const s1 = new THREE.Mesh(new THREE.SphereGeometry(0.8, 10, 10), sakuraMat);
+    s1.position.y = 1.35;
+    s1.castShadow = true;
+    treeGroup.add(s1);
+
+    const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 8), sakuraMat);
+    s2.position.set(-0.3, 1.75, 0.2);
+    s2.castShadow = true;
+    treeGroup.add(s2);
+  } else if (type === 'cypress') {
+    const cypMat = new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.6 });
+    const cypGeo = new THREE.CylinderGeometry(0.1, 0.45, 2.2, 8);
+    const cypMesh = new THREE.Mesh(cypGeo, cypMat);
+    cypMesh.position.y = 1.8;
+    cypMesh.castShadow = true;
+    treeGroup.add(cypMesh);
+  } else if (type === 'flowering') {
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.5 });
+    const g1 = new THREE.Mesh(new THREE.SphereGeometry(0.75, 10, 10), goldMat);
+    g1.position.y = 1.3;
+    g1.castShadow = true;
+    treeGroup.add(g1);
   }
 
   return treeGroup;
@@ -426,7 +478,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     sceneRef.current = scene;
 
     // 2. Camera Setup
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1400);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.8, 1400);
     camera.position.set(54, 44, 62);
     camera.lookAt(0, 4, 0);
     cameraRef.current = camera;
@@ -547,15 +599,31 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
       scene.add(buildingGroup);
 
-      // Trees & Street Lamps around lot
-      const treeType = idx % 2 === 0 ? 'oak' : 'pine';
-      const treeMesh = createNeighborhoodTree(treeType);
-      treeMesh.position.set(x + 2.4, 0, z + 1.4);
-      scene.add(treeMesh);
+      // 🌳 Rich Natural Greenery & Gardens around each building lot ("অতিরিক্ত গাছপালা")
+      const treeTypes: ('oak' | 'pine' | 'sakura' | 'cypress' | 'flowering' | 'bush')[] = ['oak', 'pine', 'sakura', 'cypress', 'flowering', 'bush'];
 
-      if (idx % 3 === 0) {
+      // 1. Four corner trees/gardens per building lot
+      const lotTreeOffsets = [
+        { dx: 2.2, dz: 1.6, type: treeTypes[(idx) % treeTypes.length] },
+        { dx: -2.2, dz: 1.6, type: treeTypes[(idx + 1) % treeTypes.length] },
+        { dx: 2.2, dz: -1.6, type: treeTypes[(idx + 2) % treeTypes.length] },
+        { dx: -2.2, dz: -1.6, type: treeTypes[(idx + 3) % treeTypes.length] },
+        { dx: 0.8, dz: 1.8, type: 'bush' as const }, // Garden entrance bush
+        { dx: -0.8, dz: 1.8, type: 'bush' as const } // Garden entrance bush
+      ];
+
+      lotTreeOffsets.forEach((t) => {
+        const tMesh = createNeighborhoodTree(t.type);
+        tMesh.position.set(x + t.dx, 0, z + t.dz);
+        const randScale = 0.85 + (Math.abs(Math.sin(x + z + t.dx)) * 0.35);
+        tMesh.scale.set(randScale, randScale, randScale);
+        tMesh.rotation.y = Math.sin(x * t.dz) * Math.PI;
+        scene.add(tMesh);
+      });
+
+      if (idx % 2 === 0) {
         const lampMesh = createStreetLamp();
-        lampMesh.position.set(x - 2.2, 0, z + 1.8);
+        lampMesh.position.set(x - 2.4, 0, z + 2.0);
         scene.add(lampMesh);
       }
 
@@ -602,6 +670,24 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       });
     });
 
+    // 🌳 OUTTER PERIMETER NATURAL FOREST BELT (48 Lush Trees surrounding the city)
+    const forestTypes: ('oak' | 'pine' | 'sakura' | 'cypress' | 'flowering')[] = ['oak', 'pine', 'sakura', 'cypress', 'flowering'];
+    for (let i = 0; i < 48; i++) {
+      const angle = (i / 48) * Math.PI * 2;
+      const radius = 52 + (i % 3) * 6; // Rings between 52 and 64 radius
+      const treeType = forestTypes[i % forestTypes.length];
+      const forestTree = createNeighborhoodTree(treeType);
+
+      const tx = Math.cos(angle) * radius;
+      const tz = Math.sin(angle) * radius;
+      forestTree.position.set(tx, 0, tz);
+
+      const treeScale = 1.1 + (Math.sin(i * 3.7) * 0.4);
+      forestTree.scale.set(treeScale, treeScale, treeScale);
+      forestTree.rotation.y = angle;
+      scene.add(forestTree);
+    }
+
     // 🦅 8. FLOCK OF 3D ANIMATED BIRDS FLYING OVERHEAD
     birdsRef.current = [];
     for (let b = 0; b < 12; b++) {
@@ -641,13 +727,16 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       });
     });
 
-    // 🔍 10. MOUSE WHEEL & TOUCH PINCH ZOOM CONTROLS
+    // 🔍 10. MOUSE WHEEL & TOUCH PINCH ZOOM CONTROLS (Enforced MIN_ZOOM = 18 so camera NEVER enters building!)
+    const MIN_ZOOM = 18;
+    const MAX_ZOOM = 140;
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (!cameraRef.current) return;
       const zoomDelta = e.deltaY * 0.05;
       const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
-      const newRadius = Math.max(8, Math.min(130, currentRadius + zoomDelta));
+      const newRadius = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, currentRadius + zoomDelta));
 
       const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
       cameraRef.current.position.copy(dir.multiplyScalar(newRadius).add(new THREE.Vector3(0, 4, 0)));
@@ -656,11 +745,19 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     container.addEventListener('wheel', handleWheel, { passive: false });
 
-    // Raycasting for Interaction
+    // Raycasting for Interaction (Strict separation of Drag vs Click!)
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+    let pointerDownPos = { x: 0, y: 0 };
 
     const handlePointerDown = (e: MouseEvent) => {
+      pointerDownPos = { x: e.clientX, y: e.clientY };
+    };
+
+    const handlePointerUp = (e: MouseEvent) => {
+      const moveDist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+      if (moveDist > 7) return; // User dragged the camera - DO NOT select building!
+
       const rect = container.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / width) * 2 - 1;
       mouse.y = -((e.clientY - rect.top) / height) * 2 + 1;
@@ -711,6 +808,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     };
 
     container.addEventListener('pointerdown', handlePointerDown);
+    container.addEventListener('pointerup', handlePointerUp);
     container.addEventListener('pointermove', handlePointerMove);
 
     // Orbit Drag & Touch Pinch Zoom
@@ -733,7 +831,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
       camera.position.x = Math.sin(cameraAngle) * currentRadius;
       camera.position.z = Math.cos(cameraAngle) * currentRadius;
-      camera.position.y = Math.max(5, Math.min(95, camera.position.y - deltaY * 0.12));
+      camera.position.y = Math.max(6, Math.min(95, camera.position.y - deltaY * 0.12));
       camera.lookAt(0, 4, 0);
 
       previousMousePosition = { x: e.clientX, y: e.clientY };
@@ -764,7 +862,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
         camera.position.x = Math.sin(cameraAngle) * currentRadius;
         camera.position.z = Math.cos(cameraAngle) * currentRadius;
-        camera.position.y = Math.max(5, Math.min(95, camera.position.y - deltaY * 0.12));
+        camera.position.y = Math.max(6, Math.min(95, camera.position.y - deltaY * 0.12));
         camera.lookAt(0, 4, 0);
 
         previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -774,9 +872,9 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         const distance = Math.sqrt(dx * dx + dy * dy);
         const deltaDist = initialPinchDistance - distance;
 
-        const zoomFactor = deltaDist * 0.15;
+        const zoomFactor = deltaDist * 0.05;
         const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
-        const newRadius = Math.max(8, Math.min(130, currentRadius + zoomFactor));
+        const newRadius = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, currentRadius + zoomFactor));
 
         const direction = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
         cameraRef.current.position.copy(direction.multiplyScalar(newRadius).add(new THREE.Vector3(0, 4, 0)));
@@ -890,6 +988,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       cancelAnimationFrame(animationFrameId);
       container.removeEventListener('wheel', handleWheel);
       container.removeEventListener('pointerdown', handlePointerDown);
+      container.removeEventListener('pointerup', handlePointerUp);
       container.removeEventListener('pointermove', handlePointerMove);
       container.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
@@ -924,7 +1023,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     if (!cameraRef.current) return;
     const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
     const currentDist = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
-    const newDist = Math.max(8, Math.min(130, currentDist + delta));
+    const newDist = Math.max(18, Math.min(130, currentDist + delta));
     cameraRef.current.position.copy(dir.multiplyScalar(newDist).add(new THREE.Vector3(0, 4, 0)));
     cameraRef.current.lookAt(0, 4, 0);
   };
