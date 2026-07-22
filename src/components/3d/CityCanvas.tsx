@@ -19,27 +19,23 @@ function createProjectSignboardTexture(title: string, commits: number, floors: n
   const ctx = canvas.getContext('2d');
 
   if (ctx) {
-    // Glassmorphic Signboard Card Background
     ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
     ctx.beginPath();
     ctx.roundRect(10, 10, 492, 110, 20);
     ctx.fill();
 
-    // Vibrant Glow Border
     ctx.strokeStyle = colorHex || '#38bdf8';
     ctx.lineWidth = 5;
     ctx.stroke();
 
-    // Title Text
     ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.fillText(title.length > 24 ? title.substring(0, 22) + '...' : title, 256, 52);
 
-    // Status / Commit Badge
     ctx.font = 'bold 18px "Fira Code", monospace';
     ctx.fillStyle = colorHex || '#38bdf8';
-    ctx.fillText(`🏠 ${floors} FLOORS • ${commits} COMMITS`, 256, 92);
+    ctx.fillText(`🏢 ${floors} FLOORS • ${commits} COMMITS`, 256, 92);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -47,73 +43,111 @@ function createProjectSignboardTexture(title: string, commits: number, floors: n
   return texture;
 }
 
-// 🦅 3D Animated Flying Bird Generator
+// 🚶 3D Animated Pedestrian / Person Walking
+function createPedestrian(shirtColor: number): { group: THREE.Group; leftLeg: THREE.Mesh; rightLeg: THREE.Mesh; leftArm: THREE.Mesh; rightArm: THREE.Mesh } {
+  const pGroup = new THREE.Group();
+
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.5 });
+  const shirtMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.4 });
+  const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+
+  // Head
+  const headGeo = new THREE.SphereGeometry(0.12, 8, 8);
+  const headMesh = new THREE.Mesh(headGeo, skinMat);
+  headMesh.position.y = 0.72;
+  headMesh.castShadow = true;
+  pGroup.add(headMesh);
+
+  // Torso / Shirt
+  const torsoGeo = new THREE.BoxGeometry(0.22, 0.32, 0.14);
+  const torsoMesh = new THREE.Mesh(torsoGeo, shirtMat);
+  torsoMesh.position.y = 0.48;
+  torsoMesh.castShadow = true;
+  pGroup.add(torsoMesh);
+
+  // Left & Right Arms
+  const armGeo = new THREE.BoxGeometry(0.07, 0.28, 0.07);
+  const leftArm = new THREE.Mesh(armGeo, shirtMat);
+  leftArm.position.set(-0.15, 0.48, 0);
+  pGroup.add(leftArm);
+
+  const rightArm = new THREE.Mesh(armGeo, shirtMat);
+  rightArm.position.set(0.15, 0.48, 0);
+  pGroup.add(rightArm);
+
+  // Left & Right Legs
+  const legGeo = new THREE.BoxGeometry(0.08, 0.32, 0.08);
+  const leftLeg = new THREE.Mesh(legGeo, pantsMat);
+  leftLeg.position.set(-0.06, 0.16, 0);
+  pGroup.add(leftLeg);
+
+  const rightLeg = new THREE.Mesh(legGeo, pantsMat);
+  rightLeg.position.set(0.06, 0.16, 0);
+  pGroup.add(rightLeg);
+
+  return { group: pGroup, leftLeg, rightLeg, leftArm, rightArm };
+}
+
+// 🏗️ 3D Rooftop Construction Crane for Active High-Commit Projects
+function createRooftopCrane(): THREE.Group {
+  const craneGroup = new THREE.Group();
+
+  const yellowMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+
+  // Vertical Lattice Mast
+  const mastGeo = new THREE.BoxGeometry(0.2, 2.5, 0.2);
+  const mastMesh = new THREE.Mesh(mastGeo, yellowMat);
+  mastMesh.position.y = 1.25;
+  craneGroup.add(mastMesh);
+
+  // Horizontal Jib Arm
+  const jibGeo = new THREE.BoxGeometry(2.4, 0.15, 0.15);
+  const jibMesh = new THREE.Mesh(jibGeo, yellowMat);
+  jibMesh.position.set(0.6, 2.5, 0);
+  craneGroup.add(jibMesh);
+
+  // Counterweight
+  const weightGeo = new THREE.BoxGeometry(0.4, 0.3, 0.3);
+  const weightMesh = new THREE.Mesh(weightGeo, new THREE.MeshStandardMaterial({ color: 0x334155 }));
+  weightMesh.position.set(-0.5, 2.5, 0);
+  craneGroup.add(weightMesh);
+
+  // Hanging Cable & Hook
+  const cableGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.2, 6);
+  const cableMesh = new THREE.Mesh(cableGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  cableMesh.position.set(1.4, 1.9, 0);
+  craneGroup.add(cableMesh);
+
+  // Red Warning Beacon Light
+  const beaconGeo = new THREE.SphereGeometry(0.08, 8, 8);
+  const beaconMesh = new THREE.Mesh(beaconGeo, new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+  beaconMesh.position.set(0, 2.6, 0);
+  craneGroup.add(beaconMesh);
+
+  return craneGroup;
+}
+
+// 🦅 3D Animated Flying Bird
 function create3DBird(): { group: THREE.Group; leftWing: THREE.Mesh; rightWing: THREE.Mesh } {
   const birdGroup = new THREE.Group();
 
-  // Bird Body
   const bodyGeo = new THREE.ConeGeometry(0.12, 0.5, 6);
   bodyGeo.rotateX(Math.PI / 2);
   const birdMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
   const bodyMesh = new THREE.Mesh(bodyGeo, birdMat);
   birdGroup.add(bodyMesh);
 
-  // Left Wing
   const wingGeo = new THREE.BoxGeometry(0.45, 0.03, 0.2);
   const leftWing = new THREE.Mesh(wingGeo, birdMat);
   leftWing.position.set(-0.24, 0, 0);
   birdGroup.add(leftWing);
 
-  // Right Wing
   const rightWing = new THREE.Mesh(wingGeo, birdMat);
   rightWing.position.set(0.24, 0, 0);
   birdGroup.add(rightWing);
 
   birdGroup.scale.set(1.2, 1.2, 1.2);
   return { group: birdGroup, leftWing, rightWing };
-}
-
-// 🐕 3D Animated Neighborhood Animal Generator (Cute Pet / Deer)
-function createNeighborhoodAnimal(type: 'dog' | 'deer'): THREE.Group {
-  const animalGroup = new THREE.Group();
-
-  const color = type === 'dog' ? 0xd69e2e : 0x8d5b4c;
-  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.6 });
-
-  // Body
-  const bodyGeo = new THREE.BoxGeometry(0.45, 0.35, 0.7);
-  const bodyMesh = new THREE.Mesh(bodyGeo, mat);
-  bodyMesh.position.y = 0.35;
-  bodyMesh.castShadow = true;
-  animalGroup.add(bodyMesh);
-
-  // Head
-  const headGeo = new THREE.BoxGeometry(0.3, 0.28, 0.35);
-  const headMesh = new THREE.Mesh(headGeo, mat);
-  headMesh.position.set(0, 0.55, 0.38);
-  animalGroup.add(headMesh);
-
-  // Legs (4 legs)
-  const legGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 8);
-  [
-    [-0.18, 0.15, 0.22],
-    [0.18, 0.15, 0.22],
-    [-0.18, 0.15, -0.22],
-    [0.18, 0.15, -0.22],
-  ].forEach(([lx, ly, lz]) => {
-    const legMesh = new THREE.Mesh(legGeo, mat);
-    legMesh.position.set(lx, ly, lz);
-    animalGroup.add(legMesh);
-  });
-
-  // Tail
-  const tailGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.25, 6);
-  const tailMesh = new THREE.Mesh(tailGeo, mat);
-  tailMesh.position.set(0, 0.45, -0.4);
-  tailMesh.rotation.x = -Math.PI / 4;
-  animalGroup.add(tailMesh);
-
-  return animalGroup;
 }
 
 // 🚗 Neighborhood Car Generator
@@ -218,16 +252,18 @@ function createStreetLamp(): THREE.Group {
   return lampGroup;
 }
 
-// 🏢 MULTI-STORY SUBURBAN BUILDING BUILDER (Floors Scale with Commit Count!)
+// 🏢 MULTI-STORY SUBURBAN BUILDING BUILDER (HEIGHT & FLOORS DIRECTLY SCALE WITH COMMIT COUNT!)
 function createMultiStoryBuilding(proj: Project, idx: number): THREE.Group {
   const buildingGroup = new THREE.Group();
 
-  // Commit count drives multi-story height! (e.g. 50 commits = 25 floors, 10 commits = 5 floors)
-  const floors = Math.max(2, Math.min(30, Math.floor(proj.commitsCount / 2)));
-  const floorHeight = 0.6;
+  // Commit count directly determines building height & floors!
+  // High commits = Very tall multi-story building (e.g. 67 commits = 33 floors!)
+  // Low commits = Small 2-4 floor cottage/villa.
+  const floors = Math.max(2, Math.min(36, Math.floor(proj.commitsCount / 2)));
+  const floorHeight = 0.65;
   const totalBuildingHeight = floors * floorHeight;
 
-  // House & Building Color Palettes
+  // Curated House & Building Color Palettes
   const palettes = [
     { wall: 0xf7fafc, roof: 0x2d3748, trim: 0xffffff, door: 0x742a2a }, // Classic Cream & Slate Roof
     { wall: 0xebf8ff, roof: 0x2b6cb0, trim: 0xe2e8f0, door: 0xd69e2e }, // Soft Blue Villa
@@ -246,26 +282,27 @@ function createMultiStoryBuilding(proj: Project, idx: number): THREE.Group {
   const windowMat = new THREE.MeshStandardMaterial({
     color: 0xfffaed,
     emissive: 0xffd8a8,
-    emissiveIntensity: 0.75,
+    emissiveIntensity: 0.8,
     roughness: 0.1,
   });
 
   const w = 2.6;
   const d = 2.4;
 
-  // 1. Foundation Base Pad
-  const baseGeo = new THREE.BoxGeometry(w + 0.2, 0.2, d + 0.2);
-  const baseMesh = new THREE.Mesh(baseGeo, trimMat);
-  baseMesh.position.y = 0.1;
-  buildingGroup.add(baseMesh);
+  // 1. Centered Square Lot Foundation Pad (PERFECTLY CENTERED AT (0,0,0)!)
+  const lotPadGeo = new THREE.BoxGeometry(w + 0.6, 0.15, d + 0.6);
+  const lotPadMesh = new THREE.Mesh(lotPadGeo, new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.8 }));
+  lotPadMesh.position.set(0, 0.075, 0);
+  lotPadMesh.receiveShadow = true;
+  buildingGroup.add(lotPadMesh);
 
-  // 2. Multi-Story Floor Stack (Each floor rendered with windows & balcony trims!)
+  // 2. Multi-Story Floor Stack (Floor-by-floor construction!)
   for (let f = 0; f < floors; f++) {
-    const floorY = 0.2 + f * floorHeight + floorHeight / 2;
+    const floorY = 0.15 + f * floorHeight + floorHeight / 2;
 
     const floorGeo = new THREE.BoxGeometry(w, floorHeight * 0.92, d);
     const floorMesh = new THREE.Mesh(floorGeo, wallMat);
-    floorMesh.position.y = floorY;
+    floorMesh.position.set(0, floorY, 0);
     floorMesh.castShadow = true;
     floorMesh.receiveShadow = true;
     buildingGroup.add(floorMesh);
@@ -274,7 +311,7 @@ function createMultiStoryBuilding(proj: Project, idx: number): THREE.Group {
     if (f > 0) {
       const divGeo = new THREE.BoxGeometry(w + 0.1, 0.08, d + 0.1);
       const divMesh = new THREE.Mesh(divGeo, trimMat);
-      divMesh.position.y = 0.2 + f * floorHeight;
+      divMesh.position.set(0, 0.15 + f * floorHeight, 0);
       buildingGroup.add(divMesh);
     }
 
@@ -283,23 +320,23 @@ function createMultiStoryBuilding(proj: Project, idx: number): THREE.Group {
       // Ground Floor Entrance Door & Porch
       const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.06);
       const doorMesh = new THREE.Mesh(doorGeo, doorMat);
-      doorMesh.position.set(0, 0.2 + 0.42, d / 2 + 0.04);
+      doorMesh.position.set(0, 0.15 + 0.42, d / 2 + 0.04);
       buildingGroup.add(doorMesh);
 
       // Porch Columns
       const porchRoofGeo = new THREE.BoxGeometry(1.4, 0.1, 0.7);
       const porchRoofMesh = new THREE.Mesh(porchRoofGeo, roofMat);
-      porchRoofMesh.position.set(0, 0.2 + 0.9, d / 2 + 0.35);
+      porchRoofMesh.position.set(0, 0.15 + 0.9, d / 2 + 0.35);
       buildingGroup.add(porchRoofMesh);
 
       [-0.55, 0.55].forEach(px => {
         const colGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.9, 8);
         const colMesh = new THREE.Mesh(colGeo, trimMat);
-        colMesh.position.set(px, 0.2 + 0.45, d / 2 + 0.65);
+        colMesh.position.set(px, 0.15 + 0.45, d / 2 + 0.65);
         buildingGroup.add(colMesh);
       });
     } else {
-      // Upper Floor Windows & Balcony Trims
+      // Upper Floor Windows
       [-0.7, 0.7].forEach(wx => {
         const frameGeo = new THREE.BoxGeometry(0.44, 0.42, 0.06);
         const frameMesh = new THREE.Mesh(frameGeo, trimMat);
@@ -314,35 +351,27 @@ function createMultiStoryBuilding(proj: Project, idx: number): THREE.Group {
     }
   }
 
-  // 3. Roof Top Cap (Sloped Gable Roof or Terrace Cap)
+  // 3. Roof Top Cap
   const roofH = 1.3;
   const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.2), roofH, 4);
   const roofMesh = new THREE.Mesh(roofGeo, roofMat);
   roofMesh.rotation.y = Math.PI / 4;
-  roofMesh.position.y = 0.2 + totalBuildingHeight + roofH / 2;
+  roofMesh.position.set(0, 0.15 + totalBuildingHeight + roofH / 2, 0);
   roofMesh.castShadow = true;
   buildingGroup.add(roofMesh);
 
-  // Chimney & Smoke
-  const chimneyGeo = new THREE.BoxGeometry(0.35, 1.0, 0.35);
-  const chimneyMat = new THREE.MeshStandardMaterial({ color: 0x742a2a });
-  const chimneyMesh = new THREE.Mesh(chimneyGeo, chimneyMat);
-  chimneyMesh.position.set(0.7, 0.2 + totalBuildingHeight + 0.5, 0.3);
-  buildingGroup.add(chimneyMesh);
-
-  for (let s = 0; s < 3; s++) {
-    const smokeGeo = new THREE.SphereGeometry(0.12 + s * 0.06, 8, 8);
-    const smokeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 - s * 0.18 });
-    const smokeMesh = new THREE.Mesh(smokeGeo, smokeMat);
-    smokeMesh.position.set(0.7 + (s % 2 === 0 ? 0.04 : -0.04), 0.2 + totalBuildingHeight + 1.1 + s * 0.25, 0.3);
-    buildingGroup.add(smokeMesh);
+  // Active Construction Crane on Roof for High-Commit Projects (floors > 10)!
+  if (floors > 10) {
+    const craneMesh = createRooftopCrane();
+    craneMesh.position.set(0, 0.15 + totalBuildingHeight + roofH, 0);
+    buildingGroup.add(craneMesh);
   }
 
-  // Driveway connecting house to main street
+  // Concrete Driveway Path connecting front door to street
   const driveGeo = new THREE.BoxGeometry(1.0, 0.02, 2.2);
   const driveMat = new THREE.MeshStandardMaterial({ color: 0x4a5568, roughness: 0.8 });
   const driveMesh = new THREE.Mesh(driveGeo, driveMat);
-  driveMesh.position.set(0, 0.01, 1.9);
+  driveMesh.position.set(0, 0.01, d / 2 + 1.1);
   buildingGroup.add(driveMesh);
 
   return buildingGroup;
@@ -362,6 +391,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
   const houseMeshesRef = useRef<{ id: string; mesh: THREE.Group; baseColor: string; project: Project; position: THREE.Vector3 }[]>([]);
   const vehiclesRef = useRef<{ mesh: THREE.Group; speed: number; direction: 'x' | 'z'; pathCoord: number; currentPos: number }[]>([]);
   const birdsRef = useRef<{ group: THREE.Group; leftWing: THREE.Mesh; rightWing: THREE.Mesh; angle: number; speed: number; radius: number; altitude: number }[]>([]);
+  const pedestriansRef = useRef<{ group: THREE.Group; leftLeg: THREE.Mesh; rightLeg: THREE.Mesh; leftArm: THREE.Mesh; rightArm: THREE.Mesh; targetPos: THREE.Vector3; startPos: THREE.Vector3; progress: number; speed: number }[]>([]);
   const commitPulsesRef = useRef<{ mesh: THREE.Mesh; startPos: THREE.Vector3; targetPos: THREE.Vector3; progress: number; speed: number }[]>([]);
 
   const [activeCamPreset, setActiveCamPreset] = useState<'overview' | 'street' | 'drone'>('overview');
@@ -389,8 +419,8 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     sceneRef.current = scene;
 
     // 2. Camera Setup
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1200);
-    camera.position.set(48, 38, 55);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1400);
+    camera.position.set(52, 42, 60);
     camera.lookAt(0, 4, 0);
     cameraRef.current = camera;
 
@@ -409,7 +439,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     scene.add(ambientLight);
 
     const sunLight = new THREE.DirectionalLight(0xfff3bf, 1.9);
-    sunLight.position.set(45, 60, 35);
+    sunLight.position.set(45, 65, 35);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
     sunLight.shadow.mapSize.height = 2048;
@@ -420,7 +450,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     scene.add(fillLight);
 
     // 5. Expanded Green Lawn Ground Disc
-    const groundGeo = new THREE.CylinderGeometry(65, 68, 0.4, 64);
+    const groundGeo = new THREE.CylinderGeometry(70, 72, 0.4, 64);
     const groundMat = new THREE.MeshStandardMaterial({
       color: currentTheme.grass,
       roughness: 0.6,
@@ -441,12 +471,12 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     // East-West Streets
     gridZCoords.forEach((z) => {
-      const roadGeo = new THREE.BoxGeometry(80, 0.02, 2.8);
+      const roadGeo = new THREE.BoxGeometry(85, 0.02, 2.8);
       const roadMesh = new THREE.Mesh(roadGeo, roadMat);
       roadMesh.position.set(0, 0.02, z);
       scene.add(roadMesh);
 
-      const lineGeo = new THREE.BoxGeometry(80, 0.03, 0.15);
+      const lineGeo = new THREE.BoxGeometry(85, 0.03, 0.15);
       const lineMesh = new THREE.Mesh(lineGeo, lineMat);
       lineMesh.position.set(0, 0.03, z);
       scene.add(lineMesh);
@@ -454,12 +484,12 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     // North-South Avenues
     gridXCoords.forEach((x) => {
-      const roadGeo = new THREE.BoxGeometry(2.8, 0.02, 60);
+      const roadGeo = new THREE.BoxGeometry(2.8, 0.02, 65);
       const roadMesh = new THREE.Mesh(roadGeo, roadMat);
       roadMesh.position.set(x, 0.02, 0);
       scene.add(roadMesh);
 
-      const lineGeo = new THREE.BoxGeometry(0.15, 0.03, 60);
+      const lineGeo = new THREE.BoxGeometry(0.15, 0.03, 65);
       const lineMesh = new THREE.Mesh(lineGeo, lineMat);
       lineMesh.position.set(x, 0.03, 0);
       scene.add(lineMesh);
@@ -468,8 +498,10 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     // 🏡 7. ALL 48 PROJECTS SERIAL NEIGHBORHOOD PLACEMENT
     houseMeshesRef.current = [];
     commitPulsesRef.current = [];
+    pedestriansRef.current = [];
 
     const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
+    const pedestrianShirtColors = [0x38bdf8, 0xef4444, 0x10b981, 0xf59e0b, 0xa855f7, 0xec4899];
 
     // Calculate Serial Position for EVERY project in sequence (8 columns × 6 rows = 48 lots)
     sortedProjects.forEach((proj, idx) => {
@@ -479,21 +511,20 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const x = -31 + col * 9;
       const z = -23 + row * 10;
 
-      // Construct Multi-Story Building/House (Height scales with commits!)
+      // Construct Multi-Story Building/House (Height & Floors scale with commits!)
       const buildingGroup = createMultiStoryBuilding(proj, idx);
       buildingGroup.position.set(x, 0, z);
-      buildingGroup.rotation.y = row % 2 === 0 ? 0 : Math.PI;
 
       const houseColorHex = proj.buildingColor || '#38bdf8';
-      const floors = Math.max(2, Math.min(30, Math.floor(proj.commitsCount / 2)));
-      const totalBuildingHeight = floors * 0.6;
+      const floors = Math.max(2, Math.min(36, Math.floor(proj.commitsCount / 2)));
+      const totalBuildingHeight = floors * 0.65;
 
       // Floating Project Name Signboard Above Building Top
       const texture = createProjectSignboardTexture(proj.title, proj.commitsCount, floors, houseColorHex);
       const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
       const labelSprite = new THREE.Sprite(spriteMat);
-      labelSprite.position.set(0, 0.4 + totalBuildingHeight + 2.4, 0);
-      labelSprite.scale.set(7.2, 1.8, 1);
+      labelSprite.position.set(0, 0.4 + totalBuildingHeight + 2.8, 0);
+      labelSprite.scale.set(7.5, 1.85, 1);
       buildingGroup.add(labelSprite);
 
       scene.add(buildingGroup);
@@ -510,13 +541,21 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         scene.add(lampMesh);
       }
 
-      // Add Neighborhood Animals (Dogs/Deer on grass lots)
-      if (idx % 4 === 0) {
-        const animalMesh = createNeighborhoodAnimal(idx % 8 === 0 ? 'deer' : 'dog');
-        animalMesh.position.set(x - 2.2, 0, z - 1.2);
-        animalMesh.rotation.y = Math.random() * Math.PI * 2;
-        scene.add(animalMesh);
-      }
+      // Add Pedestrian / Person Walking into the Building Front Door ("মানুষ হেটে হেটে বিল্ডিংয়ের ভেতরে যাবে")
+      const pedData = createPedestrian(pedestrianShirtColors[idx % pedestrianShirtColors.length]);
+      const doorY = 0.3;
+      const startPos = new THREE.Vector3(x, doorY, z + 4.5); // sidewalk start
+      const targetPos = new THREE.Vector3(x, doorY, z + 1.2); // front door
+      pedData.group.position.copy(startPos);
+      scene.add(pedData.group);
+
+      pedestriansRef.current.push({
+        ...pedData,
+        startPos,
+        targetPos,
+        progress: Math.random(),
+        speed: 0.005 + Math.random() * 0.004
+      });
 
       const housePos = new THREE.Vector3(x, 0, z);
       houseMeshesRef.current.push({
@@ -532,13 +571,13 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const pulseMat = new THREE.MeshBasicMaterial({ color: parseInt(houseColorHex.replace('#', ''), 16) || 0x38bdf8 });
       const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
 
-      const startPos = new THREE.Vector3(x, 0.3, z - 5);
-      pulseMesh.position.copy(startPos);
+      const pulseStartPos = new THREE.Vector3(x, 0.3, z - 5);
+      pulseMesh.position.copy(pulseStartPos);
       scene.add(pulseMesh);
 
       commitPulsesRef.current.push({
         mesh: pulseMesh,
-        startPos,
+        startPos: pulseStartPos,
         targetPos: housePos.clone().add(new THREE.Vector3(0, 0.3, 0)),
         progress: Math.random(),
         speed: 0.006 + Math.random() * 0.006
@@ -547,11 +586,11 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     // 🦅 8. FLOCK OF 3D ANIMATED BIRDS FLYING IN OVERHEAD SKY
     birdsRef.current = [];
-    for (let b = 0; b < 10; b++) {
+    for (let b = 0; b < 12; b++) {
       const birdData = create3DBird();
-      const angle = (b / 10) * Math.PI * 2;
-      const radius = 25 + Math.random() * 15;
-      const altitude = 18 + Math.random() * 12;
+      const angle = (b / 12) * Math.PI * 2;
+      const radius = 28 + Math.random() * 15;
+      const altitude = 20 + Math.random() * 14;
 
       birdData.group.position.set(Math.cos(angle) * radius, altitude, Math.sin(angle) * radius);
       scene.add(birdData.group);
@@ -590,7 +629,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       if (!cameraRef.current) return;
       const zoomDelta = e.deltaY * 0.05;
       const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
-      const newRadius = Math.max(8, Math.min(110, currentRadius + zoomDelta));
+      const newRadius = Math.max(8, Math.min(120, currentRadius + zoomDelta));
 
       const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
       cameraRef.current.position.copy(dir.multiplyScalar(newRadius).add(new THREE.Vector3(0, 4, 0)));
@@ -676,7 +715,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
       camera.position.x = Math.sin(cameraAngle) * currentRadius;
       camera.position.z = Math.cos(cameraAngle) * currentRadius;
-      camera.position.y = Math.max(5, Math.min(80, camera.position.y - deltaY * 0.12));
+      camera.position.y = Math.max(5, Math.min(90, camera.position.y - deltaY * 0.12));
       camera.lookAt(0, 4, 0);
 
       previousMousePosition = { x: e.clientX, y: e.clientY };
@@ -707,7 +746,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
         camera.position.x = Math.sin(cameraAngle) * currentRadius;
         camera.position.z = Math.cos(cameraAngle) * currentRadius;
-        camera.position.y = Math.max(5, Math.min(80, camera.position.y - deltaY * 0.12));
+        camera.position.y = Math.max(5, Math.min(90, camera.position.y - deltaY * 0.12));
         camera.lookAt(0, 4, 0);
 
         previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -719,7 +758,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
         const zoomFactor = deltaDist * 0.15;
         const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
-        const newRadius = Math.max(8, Math.min(110, currentRadius + zoomFactor));
+        const newRadius = Math.max(8, Math.min(120, currentRadius + zoomFactor));
 
         const direction = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
         cameraRef.current.position.copy(direction.multiplyScalar(newRadius).add(new THREE.Vector3(0, 4, 0)));
@@ -740,7 +779,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     container.addEventListener('touchmove', handleTouchMove, { passive: true });
     container.addEventListener('touchend', handleTouchEnd);
 
-    // 11. Real-time Animation Loop (Flapping Birds, Moving Cars, Commit Pulses)
+    // 11. Real-time Animation Loop (Flapping Birds, Moving Cars, Walking Pedestrians, Commit Pulses)
     let animationFrameId: number;
     let clock = new THREE.Clock();
 
@@ -764,10 +803,24 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         b.group.position.y = b.altitude + Math.sin(elapsedTime * 2 + b.angle) * 1.5;
         b.group.rotation.y = -b.angle + Math.PI / 2;
 
-        // Flapping wings
         const wingFlap = Math.sin(elapsedTime * 12 + b.angle) * 0.45;
         b.leftWing.rotation.z = wingFlap;
         b.rightWing.rotation.z = -wingFlap;
+      });
+
+      // Animate Walking Pedestrians ("মানুষ হেটে হেটে বিল্ডিংয়ের ভেতরে যাবে")
+      pedestriansRef.current.forEach((ped) => {
+        ped.progress += ped.speed;
+        if (ped.progress > 1) ped.progress = 0;
+
+        ped.group.position.lerpVectors(ped.startPos, ped.targetPos, ped.progress);
+
+        // Walking leg and arm swinging motion
+        const legSwing = Math.sin(elapsedTime * 10) * 0.35;
+        ped.leftLeg.rotation.x = legSwing;
+        ped.rightLeg.rotation.x = -legSwing;
+        ped.leftArm.rotation.x = -legSwing;
+        ped.rightArm.rotation.x = legSwing;
       });
 
       // Animate Vehicles driving along grid streets
@@ -834,7 +887,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     playSound('click');
     if (!cameraRef.current) return;
     if (preset === 'overview') {
-      cameraRef.current.position.set(48, 38, 55);
+      cameraRef.current.position.set(52, 42, 60);
     } else if (preset === 'street') {
       cameraRef.current.position.set(22, 6, 28);
     } else if (preset === 'drone') {
@@ -848,7 +901,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     if (!cameraRef.current) return;
     const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
     const currentDist = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
-    const newDist = Math.max(8, Math.min(110, currentDist + delta));
+    const newDist = Math.max(8, Math.min(120, currentDist + delta));
     cameraRef.current.position.copy(dir.multiplyScalar(newDist).add(new THREE.Vector3(0, 4, 0)));
     cameraRef.current.lookAt(0, 4, 0);
   };
@@ -917,13 +970,13 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
           ALL {projects.length} GITHUB PROJECTS SUBURBAN NEIGHBORHOOD
         </div>
         <p className="text-slate-400 text-[10px]">
-          • All 48 Repositories Built as Multi-Story Buildings (Floors Scale by Commit Count)
+          • Buildings Centered on Lots • Height Directly Scaled by Real Commits
         </p>
         <p className="text-slate-400 text-[10px]">
-          • Flying Birds in Sky, Animals on Lawns, Street Traffic & Live Commit Flow
+          • Active Rooftop Cranes on High-Commit Projects • Pedestrians Walking into Front Doors
         </p>
         <div className="mt-1.5 pt-1.5 border-t border-slate-800 flex items-center gap-2 text-slate-300 text-[11px]">
-          <span>Buildings: <strong className="text-sky-300">{projects.length} / 48 Active</strong></span>
+          <span>Buildings: <strong className="text-sky-300">{projects.length} Active</strong></span>
           <span>Theme: <strong className="text-purple-400 capitalize">{cityConfig.theme}</strong></span>
         </div>
       </div>
