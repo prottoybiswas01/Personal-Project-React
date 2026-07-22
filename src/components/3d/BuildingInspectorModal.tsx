@@ -17,11 +17,12 @@ export const BuildingInspectorModal: React.FC<BuildingInspectorModalProps> = ({
   if (!project) return null;
 
   const floors = Math.max(3, Math.floor(project.commitsCount / 2));
-  const activeUrl = project.liveUrl || project.githubUrl;
+  const hasLiveUrl = Boolean(project.liveUrl && project.liveUrl !== project.githubUrl);
+  const displayUrl = hasLiveUrl ? project.liveUrl! : project.githubUrl;
 
   const handleCopyLink = () => {
     playSound('click');
-    navigator.clipboard.writeText(activeUrl);
+    navigator.clipboard.writeText(displayUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -128,7 +129,7 @@ export const BuildingInspectorModal: React.FC<BuildingInspectorModalProps> = ({
         {/* Direct Link & Copy Link Action Box */}
         <div className="mt-5 p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2 font-mono-code">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-400">Project URL:</span>
+            <span className="text-slate-400">{hasLiveUrl ? 'Live App Link:' : 'GitHub Repository Link:'}</span>
             <button
               onClick={handleCopyLink}
               className="text-sky-400 hover:text-sky-300 flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 transition-all"
@@ -147,13 +148,13 @@ export const BuildingInspectorModal: React.FC<BuildingInspectorModalProps> = ({
             </button>
           </div>
           <p className="text-xs text-sky-300 truncate font-mono-code bg-slate-950 p-2 rounded-lg border border-slate-800/80">
-            {activeUrl}
+            {displayUrl}
           </p>
         </div>
 
         {/* Direct Action Buttons */}
         <div className="mt-6 flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-slate-800">
-          {project.liveUrl ? (
+          {hasLiveUrl && (
             <a
               href={project.liveUrl}
               target="_blank"
@@ -164,17 +165,6 @@ export const BuildingInspectorModal: React.FC<BuildingInspectorModalProps> = ({
               <span>🚀 OPEN LIVE APPLICATION</span>
               <ExternalLink className="w-4 h-4" />
             </a>
-          ) : (
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => playSound('click')}
-              className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-mono-code text-xs font-bold flex items-center justify-center gap-2 shadow-lg glow-cyan transition-all"
-            >
-              <span>🚀 OPEN GITHUB REPOSITORY</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
           )}
 
           <a
@@ -182,10 +172,10 @@ export const BuildingInspectorModal: React.FC<BuildingInspectorModalProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playSound('click')}
-            className="w-full sm:w-auto py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-mono-code text-xs font-medium flex items-center justify-center gap-2 transition-all"
+            className={`w-full ${hasLiveUrl ? 'sm:w-auto' : 'sm:flex-1'} py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-mono-code text-xs font-bold flex items-center justify-center gap-2 transition-all`}
           >
             <GitCommit className="w-4 h-4 text-sky-400" />
-            <span>GitHub Source</span>
+            <span>🐙 VIEW GITHUB REPOSITORY</span>
           </a>
         </div>
 

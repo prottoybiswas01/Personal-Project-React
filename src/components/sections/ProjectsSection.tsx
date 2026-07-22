@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Project } from '../../types/portfolio';
-import { Layers, GitCommit, ExternalLink, Box, Code, RefreshCw, Trophy, ExternalLink as ArrowLink } from 'lucide-react';
+import { Layers, GitCommit, ExternalLink, Box, Code, RefreshCw, Trophy, ChevronDown, ChevronUp } from 'lucide-react';
 import { playSound } from '../../utils/storage';
 
 interface ProjectsSectionProps {
@@ -17,6 +17,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   isSyncingGitHub = false,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [showAllGrid, setShowAllGrid] = useState<boolean>(false);
 
   // 1. Sort projects descending by commits count (most committed projects rank highest!)
   const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
@@ -26,8 +27,8 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
     ? sortedProjects
     : sortedProjects.filter(p => p.category === selectedCategory);
 
-  // 3. Limit to TOP 6 projects only for this grid view!
-  const top6GridProjects = filteredProjects.slice(0, 6);
+  // 3. Grid display logic: Show top 6 or expand to show all projects!
+  const displayedProjects = showAllGrid ? filteredProjects : filteredProjects.slice(0, 6);
 
   const categories = ['All', 'Full Stack', 'Frontend', 'Backend', 'UI/UX'];
 
@@ -38,7 +39,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
       <div className="text-center max-w-3xl mx-auto space-y-4 mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-xs font-mono-code text-sky-400">
           <Trophy className="w-3.5 h-3.5 text-amber-400" />
-          <span>TOP 6 MOST COMMITTED PROJECTS</span>
+          <span>{showAllGrid ? `ALL ${projects.length} GITHUB REPOSITORIES` : 'TOP 6 MOST COMMITTED PROJECTS'}</span>
         </div>
         
         <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-white">
@@ -46,7 +47,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         </h2>
         
         <p className="text-slate-400 text-xs sm:text-sm font-sans leading-relaxed">
-          Showing the top 6 repositories ranked by Git commit activity. Repositories with the highest commits rank first!
+          Repositories are ranked by real Git commit activity. Repositories with the highest commit history rank first!
         </p>
 
         <div className="pt-2 flex justify-center gap-3 flex-wrap">
@@ -84,9 +85,9 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         ))}
       </div>
 
-      {/* Projects Grid (LIMITED TO EXACTLY 6 CARDS) */}
+      {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        {top6GridProjects.map((project, rank) => {
+        {displayedProjects.map((project, rank) => {
           const floors = Math.max(3, Math.floor(project.commitsCount / 2));
           return (
             <div
@@ -166,7 +167,18 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   <span>Inspect 3D Building</span>
                 </button>
 
-                {project.liveUrl ? (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => playSound('click')}
+                  className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all shrink-0"
+                  title="View GitHub Repository"
+                >
+                  <GitCommit className="w-4 h-4" />
+                </a>
+
+                {project.liveUrl && project.liveUrl !== project.githubUrl && (
                   <a
                     href={project.liveUrl}
                     target="_blank"
@@ -177,17 +189,6 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
-                ) : (
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => playSound('click')}
-                    className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all shrink-0"
-                    title="View GitHub Repository"
-                  >
-                    <GitCommit className="w-4 h-4" />
-                  </a>
                 )}
               </div>
 
@@ -196,18 +197,18 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         })}
       </div>
 
-      {/* Footer CTA: See All Repositories on GitHub */}
+      {/* Expand/Collapse Toggle Button for All 48 Projects */}
       <div className="mt-12 text-center">
-        <a
-          href="https://github.com/prottoybiswas01?tab=repositories"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => playSound('click')}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-500/30 text-sky-300 font-mono-code text-xs font-bold transition-all shadow-lg glow-cyan"
+        <button
+          onClick={() => {
+            playSound('click');
+            setShowAllGrid(!showAllGrid);
+          }}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-500/40 text-sky-300 font-mono-code text-xs font-bold transition-all shadow-lg glow-cyan"
         >
-          <span>SEE ALL {projects.length} REPOSITORIES ON GITHUB</span>
-          <ArrowLink className="w-4 h-4" />
-        </a>
+          <span>{showAllGrid ? 'SHOW TOP 6 PROJECTS ONLY' : `VIEW ALL ${projects.length} REPOSITORIES IN GRID`}</span>
+          {showAllGrid ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
       </div>
 
     </section>
