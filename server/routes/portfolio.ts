@@ -35,10 +35,10 @@ function formatRepoTitle(name: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-// Enhanced Live GitHub Auto Sync Engine
+// 100% Automated Live GitHub Sync Engine
 export async function syncGitHubRepositories(username: string = 'prottoybiswas01') {
   try {
-    console.log(`📡 Fetching live public repositories for GitHub user: ${username}`);
+    console.log(`📡 100% Auto-syncing live public repositories for GitHub user: ${username}`);
     const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, {
       headers: {
         'User-Agent': 'Prottoy-Portfolio-3D-App'
@@ -55,49 +55,37 @@ export async function syncGitHubRepositories(username: string = 'prottoybiswas01
     const syncedProjects = [];
 
     for (const repo of repos) {
-      // 1. Try to fetch portfolio.json metadata file from repo if user created one
-      let repoMeta: any = {};
-      try {
-        const metaRes = await fetch(`https://raw.githubusercontent.com/${username}/${repo.name}/main/portfolio.json`);
-        if (metaRes.ok) {
-          repoMeta = await metaRes.json();
-        }
-      } catch {
-        // No custom portfolio.json, fallback to intelligent GitHub defaults
-      }
-
-      // Preserve existing manual liveUrl or buildingColor if user edited it in MongoDB
+      // Check existing in MongoDB
       const existingInDB = await ProjectModel.findOne({ id: `gh-${repo.id}` }).lean();
 
-      // Estimate commits count from repository size / updates
-      const estimatedCommits = repoMeta.commitsCount || Math.max(10, Math.min(80, Math.floor(repo.size / 80) + 15));
+      // Estimate initial commits count or preserve growing count
+      const initialCommits = Math.max(12, Math.min(90, Math.floor(repo.size / 70) + 15));
+      const currentCommits = existingInDB ? Math.max(existingInDB.commitsCount, initialCommits) : initialCommits;
 
       // Build tech stack list from GitHub topics & language
-      const techStack: string[] = repoMeta.techStack || [];
-      if (techStack.length === 0) {
-        if (repo.language) techStack.push(repo.language);
-        if (Array.isArray(repo.topics)) {
-          repo.topics.forEach((t: string) => {
-            if (!techStack.includes(t)) techStack.push(t);
-          });
-        }
-        if (!techStack.includes('Git')) techStack.push('Git');
-        if (!techStack.includes('GitHub')) techStack.push('GitHub');
+      const techStack: string[] = [];
+      if (repo.language) techStack.push(repo.language);
+      if (Array.isArray(repo.topics)) {
+        repo.topics.forEach((t: string) => {
+          if (!techStack.includes(t)) techStack.push(t);
+        });
       }
+      if (!techStack.includes('Git')) techStack.push('Git');
+      if (!techStack.includes('GitHub')) techStack.push('GitHub');
 
       const projData = {
         id: `gh-${repo.id}`,
-        title: repoMeta.title || formatRepoTitle(repo.name),
-        subtitle: repoMeta.subtitle || `GitHub Repository (${repo.language || 'Web'})`,
-        description: repoMeta.description || repo.description || `Public GitHub repository ${repo.full_name}. Updated on ${new Date(repo.updated_at).toLocaleDateString()}.`,
-        category: (repoMeta.category || (repo.language === 'TypeScript' || repo.language === 'JavaScript' ? 'Full Stack' : 'Frontend')) as any,
+        title: existingInDB?.title || formatRepoTitle(repo.name),
+        subtitle: `GitHub Repository (${repo.language || 'Web'})`,
+        description: repo.description || existingInDB?.description || `Public GitHub repository ${repo.full_name}. Updated on ${new Date(repo.updated_at).toLocaleDateString()}.`,
+        category: (repo.language === 'TypeScript' || repo.language === 'JavaScript' ? 'Full Stack' : 'Frontend') as any,
         techStack,
         githubUrl: repo.html_url,
-        liveUrl: existingInDB?.liveUrl || repoMeta.liveUrl || repo.homepage || '',
-        imageUrl: repoMeta.imageUrl || existingInDB?.imageUrl || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
-        commitsCount: estimatedCommits,
-        buildingColor: repoMeta.buildingColor || existingInDB?.buildingColor || getBuildingColor(repo.language, repo.topics),
-        featured: repoMeta.featured ?? (repo.stargazers_count > 0 || repo.name.toLowerCase().includes('react')),
+        liveUrl: existingInDB?.liveUrl || repo.homepage || '',
+        imageUrl: existingInDB?.imageUrl || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+        commitsCount: currentCommits,
+        buildingColor: existingInDB?.buildingColor || getBuildingColor(repo.language, repo.topics),
+        featured: repo.stargazers_count > 0 || repo.name.toLowerCase().includes('react'),
         createdAt: repo.created_at ? repo.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
       };
 
@@ -110,7 +98,7 @@ export async function syncGitHubRepositories(username: string = 'prottoybiswas01
       syncedProjects.push(updated);
     }
 
-    console.log(`✅ Synced ${syncedProjects.length} GitHub repositories with MongoDB Atlas!`);
+    console.log(`✅ 100% Auto-synced ${syncedProjects.length} GitHub repositories into MongoDB Atlas!`);
     return syncedProjects;
   } catch (err) {
     console.error('Failed to sync live GitHub repositories:', err);
@@ -118,14 +106,14 @@ export async function syncGitHubRepositories(username: string = 'prottoybiswas01
   }
 }
 
-// GET /api/github/sync -> Fetch & Sync Live Repos from GitHub API to MongoDB
+// GET /api/github/sync -> Automatic Sync Endpoint
 router.get('/github/sync', async (_req, res) => {
   try {
     const repos = await syncGitHubRepositories();
     const allProjects = await ProjectModel.find().sort({ createdAt: -1 }).lean();
     res.json({
       success: true,
-      message: `Successfully auto-synced ${repos.length} GitHub repositories with MongoDB Atlas!`,
+      message: `Successfully 100% auto-synced ${repos.length} GitHub repositories with MongoDB Atlas!`,
       projects: allProjects
     });
   } catch {
@@ -133,21 +121,55 @@ router.get('/github/sync', async (_req, res) => {
   }
 });
 
-// POST /api/github/webhook -> Real-time GitHub Webhook Event Listener
+// POST /api/github/webhook -> 100% Zero-Touch Real-Time GitHub Push Listener Webhook
 router.post('/github/webhook', async (req, res) => {
   try {
-    const event = req.headers['x-github-event'];
-    console.log(`🔔 Received GitHub Webhook Notification: Event=${event}`);
-    
-    // Automatically trigger live sync when new code is pushed or a repo is created!
+    const event = req.headers['x-github-event'] || 'push';
+    const body = req.body || {};
+
+    console.log(`⚡ Real-time GitHub Webhook Event Triggered: Event=${event}`);
+
+    // If it's a push event with commit details
+    if (body.repository && body.repository.id) {
+      const repoId = `gh-${body.repository.id}`;
+      const pushedCommitsCount = Array.isArray(body.commits) ? body.commits.length : 1;
+      const commitMsg = body.head_commit?.message || 'Pushed commit to GitHub';
+
+      console.log(`🚀 GitHub Commit Pushed to ${body.repository.name}: "${commitMsg}" (+${pushedCommitsCount} commits)`);
+
+      // Automatically increment commits & add 3D floor in MongoDB Atlas!
+      const updated = await ProjectModel.findOneAndUpdate(
+        { id: repoId },
+        { 
+          $inc: { commitsCount: pushedCommitsCount },
+          $set: {
+            description: body.repository.description || `Public GitHub repository ${body.repository.full_name}.`,
+            githubUrl: body.repository.html_url,
+            liveUrl: body.repository.homepage || ''
+          }
+        },
+        { new: true, upsert: true }
+      );
+
+      // Trigger full sync in background
+      syncGitHubRepositories();
+
+      return res.json({
+        success: true,
+        message: `100% Auto-synced! Pushed ${pushedCommitsCount} commit(s) to ${body.repository.name}. 3D Skyscraper building floor added!`,
+        updatedProject: updated
+      });
+    }
+
+    // Default trigger full sync
     const repos = await syncGitHubRepositories();
     res.json({
       success: true,
-      message: `GitHub webhook processed event '${event}'. Synced ${repos.length} repositories.`,
+      message: `GitHub webhook processed event '${event}'. Auto-synced ${repos.length} repositories.`,
       event
     });
   } catch (err) {
-    console.error('Error processing GitHub webhook:', err);
+    console.error('Error processing 100% auto GitHub webhook:', err);
     res.status(500).json({ error: 'Failed to process webhook' });
   }
 });
