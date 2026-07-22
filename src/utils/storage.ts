@@ -9,10 +9,14 @@ export const getStoredPortfolioData = (): PortfolioData => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      const profile = { ...initialPortfolioData.profile, ...(parsed.profile || {}) };
+      if (!profile.avatarUrl || profile.avatarUrl.includes('unsplash.com')) {
+        profile.avatarUrl = '/prottoy_profile.png';
+      }
       return {
         ...initialPortfolioData,
         ...parsed,
-        profile: { ...initialPortfolioData.profile, ...(parsed.profile || {}) },
+        profile,
         cityConfig: { ...initialPortfolioData.cityConfig, ...(parsed.cityConfig || {}) },
       };
     }

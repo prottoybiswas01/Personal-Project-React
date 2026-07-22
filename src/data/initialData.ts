@@ -6,7 +6,7 @@ export const initialPortfolioData: PortfolioData = {
     title: 'MERN Stack Developer | UI/UX Designer',
     bio: 'Passionate MERN stack web developer and UI/UX designer from Dhaka, Bangladesh. Specializing in building modern, scalable, interactive web applications with immersive user experiences.',
     location: 'Dhaka, Bangladesh',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+    avatarUrl: '/prottoy_profile.png',
     email: 'prottoybiswas01@gmail.com',
     githubUsername: 'prottoybiswas01',
     githubUrl: 'https://github.com/prottoybiswas01',

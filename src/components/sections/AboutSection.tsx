@@ -17,13 +17,13 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ profile }) => {
         <div className="lg:col-span-5 relative">
           <div className="relative mx-auto max-w-md glass-panel p-6 rounded-3xl border border-sky-500/30 glow-cyan">
             
-            <div className="relative h-72 w-full rounded-2xl overflow-hidden border border-slate-700 mb-6">
+            <div className="relative h-80 sm:h-96 w-full rounded-2xl overflow-hidden border border-sky-500/40 shadow-2xl mb-6 bg-slate-900">
               <img
                 src={profile.avatarUrl}
                 alt={profile.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent" />
               <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-sky-500/30 flex items-center gap-2 text-xs font-mono-code text-sky-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                 <span>{profile.location}</span>

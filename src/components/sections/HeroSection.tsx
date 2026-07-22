@@ -62,8 +62,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </button>
           </div>
 
-          {/* Main Title */}
-          <div className="space-y-1">
+          {/* Main Title & Avatar Badge */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-sky-400/80 shadow-lg shrink-0 glow-cyan">
+                <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover object-top" />
+              </div>
+              <span className="text-xs font-mono-code text-sky-300 font-bold bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full">
+                Prottoy Biswas • Developer Portfolio
+              </span>
+            </div>
+
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black text-white tracking-tight leading-tight break-words">
               Hi, I'm <br className="hidden sm:inline" />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-purple-400 to-pink-500 glow-text-cyan">
