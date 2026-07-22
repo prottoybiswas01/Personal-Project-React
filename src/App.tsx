@@ -175,13 +175,6 @@ export function App() {
       
       {/* Top Header Navbar */}
       <Navbar
-        onOpenAdmin={() => {
-          if (isAdminLoggedIn) {
-            setIsAdminLoginOpen(false);
-          } else {
-            setIsAdminLoginOpen(true);
-          }
-        }}
         activeSection={activeSection}
         onNavigate={handleNavigate}
         onSyncGitHub={handleSyncGitHub}
@@ -219,7 +212,6 @@ export function App() {
             saveCityConfigToDB(nextConfig);
           }}
           onSelectProject={(proj) => setSelectedProject(proj)}
-          onOpenAdmin={() => setIsAdminLoginOpen(true)}
           onSyncGitHub={handleSyncGitHub}
           isSyncingGitHub={isSyncingGitHub}
         />
@@ -256,7 +248,6 @@ export function App() {
       {/* Cyberpunk Footer */}
       <Footer
         profile={portfolioData.profile}
-        onOpenAdmin={() => setIsAdminLoginOpen(true)}
       />
 
       {/* 3D Skyscraper Building Inspector Modal */}

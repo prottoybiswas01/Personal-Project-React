@@ -1,14 +1,13 @@
 import React from 'react';
-import { Mail, MapPin, Shield } from 'lucide-react';
+import { Mail, MapPin } from 'lucide-react';
 import type { ProfileInfo } from '../../types/portfolio';
 import { playSound } from '../../utils/storage';
 
 interface FooterProps {
   profile: ProfileInfo;
-  onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ profile, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ profile }) => {
   return (
     <footer className="relative z-10 bg-slate-950 border-t border-slate-800 text-slate-400 font-mono-code pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,17 +76,6 @@ export const Footer: React.FC<FooterProps> = ({ profile, onOpenAdmin }) => {
                 <Mail className="w-4 h-4" />
               </a>
             </div>
-
-            <button
-              onClick={() => {
-                playSound('admin');
-                onOpenAdmin();
-              }}
-              className="w-full mt-2 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-purple-500/30 text-purple-300 text-xs font-bold flex items-center justify-center gap-2 transition-all group"
-            >
-              <Shield className="w-3.5 h-3.5 text-purple-400 group-hover:rotate-12 transition-transform" />
-              <span>Admin Dashboard (/admin)</span>
-            </button>
           </div>
         </div>
 

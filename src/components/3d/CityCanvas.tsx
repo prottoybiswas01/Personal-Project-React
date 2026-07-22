@@ -19,24 +19,20 @@ function createProjectSignboardTexture(text: string, status: string, colorHex: s
   const ctx = canvas.getContext('2d');
 
   if (ctx) {
-    // Glassmorphic Signboard Card Background
     ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
     ctx.beginPath();
     ctx.roundRect(10, 10, 492, 108, 20);
     ctx.fill();
 
-    // Vibrant Glow Border
     ctx.strokeStyle = colorHex || '#38bdf8';
     ctx.lineWidth = 5;
     ctx.stroke();
 
-    // Title Text
     ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.fillText(text.length > 24 ? text.substring(0, 22) + '...' : text, 256, 52);
 
-    // Status / Commit Badge
     ctx.font = 'bold 18px "Fira Code", monospace';
     ctx.fillStyle = colorHex || '#38bdf8';
     ctx.fillText(status, 256, 92);
@@ -51,7 +47,6 @@ function createProjectSignboardTexture(text: string, status: string, colorHex: s
 function createSuburbanCar(colorHex: string): THREE.Group {
   const carGroup = new THREE.Group();
 
-  // Body
   const bodyGeo = new THREE.BoxGeometry(0.9, 0.45, 1.4);
   const bodyMat = new THREE.MeshStandardMaterial({
     color: parseInt(colorHex, 16),
@@ -63,7 +58,6 @@ function createSuburbanCar(colorHex: string): THREE.Group {
   bodyMesh.castShadow = true;
   carGroup.add(bodyMesh);
 
-  // Roof & Windows
   const cabinGeo = new THREE.BoxGeometry(0.75, 0.38, 0.75);
   const cabinMat = new THREE.MeshStandardMaterial({
     color: 0x1e293b,
@@ -74,7 +68,6 @@ function createSuburbanCar(colorHex: string): THREE.Group {
   cabinMesh.position.set(0, 0.65, -0.05);
   carGroup.add(cabinMesh);
 
-  // Wheels
   const wheelGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 12);
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
   wheelGeo.rotateZ(Math.PI / 2);
@@ -90,7 +83,6 @@ function createSuburbanCar(colorHex: string): THREE.Group {
     carGroup.add(wMesh);
   });
 
-  // Lights
   const lightGeo = new THREE.SphereGeometry(0.08, 8, 8);
   const h1 = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xfffaed }));
   h1.position.set(-0.3, 0.35, 0.7);
@@ -106,7 +98,6 @@ function createSuburbanCar(colorHex: string): THREE.Group {
 function createNeighborhoodTree(type: 'oak' | 'pine'): THREE.Group {
   const treeGroup = new THREE.Group();
 
-  // Wooden Trunk
   const trunkGeo = new THREE.CylinderGeometry(0.14, 0.22, 1.0, 8);
   const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.8 });
   const trunkMesh = new THREE.Mesh(trunkGeo, trunkMat);
@@ -115,7 +106,6 @@ function createNeighborhoodTree(type: 'oak' | 'pine'): THREE.Group {
   treeGroup.add(trunkMesh);
 
   if (type === 'oak') {
-    // Deciduous Foliage Spheres
     const leafMat = new THREE.MeshStandardMaterial({ color: 0x276749, roughness: 0.5 });
     const f1 = new THREE.Mesh(new THREE.SphereGeometry(0.65, 10, 10), leafMat);
     f1.position.y = 1.1;
@@ -127,7 +117,6 @@ function createNeighborhoodTree(type: 'oak' | 'pine'): THREE.Group {
     f2.castShadow = true;
     treeGroup.add(f2);
   } else {
-    // Pine Tree Cones
     const pineMat = new THREE.MeshStandardMaterial({ color: 0x1c4532, roughness: 0.5 });
     for (let p = 0; p < 3; p++) {
       const coneGeo = new THREE.CylinderGeometry(0, 0.75 - p * 0.18, 0.7, 8);
@@ -145,14 +134,12 @@ function createNeighborhoodTree(type: 'oak' | 'pine'): THREE.Group {
 function createStreetLamp(): THREE.Group {
   const lampGroup = new THREE.Group();
 
-  // Pole
   const poleGeo = new THREE.CylinderGeometry(0.05, 0.07, 1.8, 8);
   const poleMat = new THREE.MeshStandardMaterial({ color: 0x2d3748, metalness: 0.8 });
   const poleMesh = new THREE.Mesh(poleGeo, poleMat);
   poleMesh.position.y = 0.9;
   lampGroup.add(poleMesh);
 
-  // Arm & Lantern
   const lanternGeo = new THREE.SphereGeometry(0.18, 8, 8);
   const lanternMat = new THREE.MeshBasicMaterial({ color: 0xf6e05e });
   const lanternMesh = new THREE.Mesh(lanternGeo, lanternMat);
@@ -166,7 +153,6 @@ function createStreetLamp(): THREE.Group {
 function createSuburbanHome(proj: Project, idx: number): THREE.Group {
   const houseGroup = new THREE.Group();
 
-  // House Color Palettes
   const housePalettes = [
     { wall: 0xf7fafc, roof: 0x2d3748, trim: 0xffffff, door: 0x742a2a }, // Classic Cream & Slate Roof
     { wall: 0xebf8ff, roof: 0x2b6cb0, trim: 0xe2e8f0, door: 0xd69e2e }, // Soft Blue Villa
@@ -192,12 +178,10 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
   const styleType = idx % 5;
 
   if (styleType === 0) {
-    // 🏡 ARCHETYPE 0: TWO-STORY SUBURBAN FAMILY HOME WITH PORCH & CHIMNEY
     const w = 2.6;
     const h = 2.2;
     const d = 2.4;
 
-    // Main House Box
     const wallGeo = new THREE.BoxGeometry(w, h, d);
     const wallMesh = new THREE.Mesh(wallGeo, wallMat);
     wallMesh.position.y = 0.2 + h / 2;
@@ -205,13 +189,11 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     wallMesh.receiveShadow = true;
     houseGroup.add(wallMesh);
 
-    // Eave Roof Trim
     const eaveGeo = new THREE.BoxGeometry(w + 0.3, 0.14, d + 0.3);
     const eaveMesh = new THREE.Mesh(eaveGeo, trimMat);
     eaveMesh.position.y = 0.2 + h;
     houseGroup.add(eaveMesh);
 
-    // Pitched Shingle Roof (Pyramid / Gable)
     const roofH = 1.3;
     const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.2), roofH, 4);
     const roofMesh = new THREE.Mesh(roofGeo, roofMat);
@@ -220,7 +202,6 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     roofMesh.castShadow = true;
     houseGroup.add(roofMesh);
 
-    // Porch Roof & Columns
     const porchRoofGeo = new THREE.BoxGeometry(1.4, 0.12, 0.8);
     const porchRoofMesh = new THREE.Mesh(porchRoofGeo, roofMat);
     porchRoofMesh.position.set(0, 0.2 + 1.1, d / 2 + 0.4);
@@ -233,7 +214,6 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
       houseGroup.add(colMesh);
     });
 
-    // Front Door & Handle
     const doorGeo = new THREE.BoxGeometry(0.55, 0.9, 0.06);
     const doorMesh = new THREE.Mesh(doorGeo, doorMat);
     doorMesh.position.set(0, 0.2 + 0.45, d / 2 + 0.04);
@@ -244,7 +224,6 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     knobMesh.position.set(0.2, 0.2 + 0.45, d / 2 + 0.08);
     houseGroup.add(knobMesh);
 
-    // Windows (Ground & 1st Floor)
     [
       [-0.7, 0.6], [0.7, 0.6],
       [-0.7, 1.6], [0.7, 1.6]
@@ -260,7 +239,6 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
       houseGroup.add(winMesh);
     });
 
-    // Chimney & Smoke
     const chimneyGeo = new THREE.BoxGeometry(0.35, 1.0, 0.35);
     const chimneyMat = new THREE.MeshStandardMaterial({ color: 0x742a2a });
     const chimneyMesh = new THREE.Mesh(chimneyGeo, chimneyMat);
@@ -276,52 +254,44 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     }
 
   } else if (styleType === 1) {
-    // 🏢 ARCHETYPE 1: MODERN GLASS & TIMBER ARCHITECTURAL VILLA
     const w = 2.8;
     const h = 2.0;
     const d = 2.4;
 
-    // Ground Floor Unit
     const wallGeo = new THREE.BoxGeometry(w, h * 0.5, d);
     const wallMesh = new THREE.Mesh(wallGeo, wallMat);
     wallMesh.position.y = 0.2 + h * 0.25;
     wallMesh.castShadow = true;
     houseGroup.add(wallMesh);
 
-    // Upper Cantilevered Glass Floor
     const upperGeo = new THREE.BoxGeometry(w * 0.9, h * 0.5, d * 0.9);
     const upperMesh = new THREE.Mesh(upperGeo, new THREE.MeshStandardMaterial({ color: 0x2d3748, roughness: 0.2 }));
     upperMesh.position.set(0.2, 0.2 + h * 0.75, 0);
     upperMesh.castShadow = true;
     houseGroup.add(upperMesh);
 
-    // Flat Terrace Roof
     const roofGeo = new THREE.BoxGeometry(w * 0.95, 0.12, d * 0.95);
     const roofMesh = new THREE.Mesh(roofGeo, trimMat);
     roofMesh.position.set(0.2, 0.2 + h + 0.06, 0);
     houseGroup.add(roofMesh);
 
-    // Large Panoramic Windows
     const winGeo = new THREE.BoxGeometry(w * 0.7, h * 0.35, 0.08);
     const winMesh = new THREE.Mesh(winGeo, windowMat);
     winMesh.position.set(0.2, 0.2 + h * 0.75, d * 0.45 + 0.02);
     houseGroup.add(winMesh);
 
-    // Wooden Pergola / Awning
     const pergolaGeo = new THREE.BoxGeometry(1.6, 0.08, 0.7);
     const pergolaMat = new THREE.MeshStandardMaterial({ color: 0x8d5b4c });
     const pergolaMesh = new THREE.Mesh(pergolaGeo, pergolaMat);
     pergolaMesh.position.set(-0.2, 0.2 + h * 0.5, d / 2 + 0.35);
     houseGroup.add(pergolaMesh);
 
-    // Front Glass Door
     const doorGeo = new THREE.BoxGeometry(0.6, 0.85, 0.06);
     const doorMesh = new THREE.Mesh(doorGeo, doorMat);
     doorMesh.position.set(-0.2, 0.2 + 0.42, d / 2 + 0.04);
     houseGroup.add(doorMesh);
 
   } else if (styleType === 2) {
-    // 🧱 ARCHETYPE 2: RED BRICK COUNTRY COTTAGE
     const w = 2.4;
     const h = 1.9;
     const d = 2.3;
@@ -332,7 +302,6 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     wallMesh.castShadow = true;
     houseGroup.add(wallMesh);
 
-    // Deep Gable Roof
     const roofH = 1.4;
     const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.2), roofH, 4);
     const roofMesh = new THREE.Mesh(roofGeo, roofMat);
@@ -341,13 +310,11 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     roofMesh.castShadow = true;
     houseGroup.add(roofMesh);
 
-    // Arched Front Door
     const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.06);
     const doorMesh = new THREE.Mesh(doorGeo, doorMat);
     doorMesh.position.set(0, 0.2 + 0.42, d / 2 + 0.04);
     houseGroup.add(doorMesh);
 
-    // Dormer Roof Window
     const dormerGeo = new THREE.BoxGeometry(0.5, 0.45, 0.4);
     const dormerMesh = new THREE.Mesh(dormerGeo, trimMat);
     dormerMesh.position.set(0, 0.2 + h + 0.4, d / 2 - 0.2);
@@ -358,7 +325,6 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     houseGroup.add(dormerWin);
 
   } else if (styleType === 3) {
-    // 🏛️ ARCHETYPE 3: PASTEL COASTAL TOWNHOUSE WITH BALCONY
     const w = 2.2;
     const h = 2.4;
     const d = 2.2;
@@ -369,7 +335,6 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     wallMesh.castShadow = true;
     houseGroup.add(wallMesh);
 
-    // Tiled Roof
     const roofH = 1.1;
     const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.15), roofH, 4);
     const roofMesh = new THREE.Mesh(roofGeo, roofMat);
@@ -377,44 +342,37 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     roofMesh.position.y = 0.2 + h + roofH / 2;
     houseGroup.add(roofMesh);
 
-    // Wrought Iron Balcony
     const balcGeo = new THREE.BoxGeometry(1.6, 0.12, 0.35);
     const balcMesh = new THREE.Mesh(balcGeo, new THREE.MeshStandardMaterial({ color: 0x1a202c }));
     balcMesh.position.set(0, 0.2 + 1.25, d / 2 + 0.15);
     houseGroup.add(balcMesh);
 
-    // French Doors to Balcony
     const frenchDoorGeo = new THREE.BoxGeometry(0.8, 0.7, 0.06);
     const frenchDoorMesh = new THREE.Mesh(frenchDoorGeo, windowMat);
     frenchDoorMesh.position.set(0, 0.2 + 1.6, d / 2 + 0.04);
     houseGroup.add(frenchDoorMesh);
 
-    // Ground Door
     const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.06);
     const doorMesh = new THREE.Mesh(doorGeo, doorMat);
     doorMesh.position.set(0, 0.2 + 0.42, d / 2 + 0.04);
     houseGroup.add(doorMesh);
 
   } else {
-    // 🏡 ARCHETYPE 4: CRAFTSMAN BUNGALOW WITH STONE BASE
     const w = 2.5;
     const h = 1.8;
     const d = 2.4;
 
-    // Stone Base
     const baseGeo = new THREE.BoxGeometry(w + 0.1, 0.4, d + 0.1);
     const baseMesh = new THREE.Mesh(baseGeo, new THREE.MeshStandardMaterial({ color: 0x4a5568, roughness: 0.8 }));
     baseMesh.position.y = 0.4;
     houseGroup.add(baseMesh);
 
-    // Timber Wall Body
     const wallGeo = new THREE.BoxGeometry(w, h - 0.4, d);
     const wallMesh = new THREE.Mesh(wallGeo, wallMat);
     wallMesh.position.y = 0.6 + (h - 0.4) / 2;
     wallMesh.castShadow = true;
     houseGroup.add(wallMesh);
 
-    // Overhanging Roof
     const roofH = 1.2;
     const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.3), roofH, 4);
     const roofMesh = new THREE.Mesh(roofGeo, roofMat);
@@ -422,18 +380,17 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     roofMesh.position.y = 0.2 + h + roofH / 2;
     houseGroup.add(roofMesh);
 
-    // Door & Porch Lantern
     const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.06);
     const doorMesh = new THREE.Mesh(doorGeo, doorMat);
     doorMesh.position.set(0, 0.2 + 0.6, d / 2 + 0.04);
     houseGroup.add(doorMesh);
   }
 
-  // Driveway connecting house to main street
-  const driveGeo = new THREE.BoxGeometry(1.0, 0.02, 2.0);
+  // Concrete Driveway Path connecting front door to street
+  const driveGeo = new THREE.BoxGeometry(1.0, 0.02, 2.2);
   const driveMat = new THREE.MeshStandardMaterial({ color: 0x4a5568, roughness: 0.8 });
   const driveMesh = new THREE.Mesh(driveGeo, driveMat);
-  driveMesh.position.set(0, 0.01, 1.8);
+  driveMesh.position.set(0, 0.01, 1.9);
   houseGroup.add(driveMesh);
 
   return houseGroup;
@@ -451,7 +408,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const houseMeshesRef = useRef<{ id: string; mesh: THREE.Group; baseColor: string; project: Project; position: THREE.Vector3 }[]>([]);
-  const vehiclesRef = useRef<{ mesh: THREE.Group; speed: number; angle: number; radius: number }[]>([]);
+  const vehiclesRef = useRef<{ mesh: THREE.Group; speed: number; direction: 'x' | 'z'; pathCoord: number; currentPos: number }[]>([]);
   const commitPulsesRef = useRef<{ mesh: THREE.Mesh; startPos: THREE.Vector3; targetPos: THREE.Vector3; progress: number; speed: number }[]>([]);
 
   const [activeCamPreset, setActiveCamPreset] = useState<'overview' | 'street' | 'drone'>('overview');
@@ -475,13 +432,13 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     const currentTheme = themeColors[cityConfig.theme] || themeColors.cyberpunk;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(currentTheme.sky);
-    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.007);
+    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.006);
     sceneRef.current = scene;
 
     // 2. Camera Setup
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.set(34, 28, 40);
-    camera.lookAt(0, 3, 0);
+    camera.lookAt(0, 2, 0);
     cameraRef.current = camera;
 
     // 3. Renderer Setup
@@ -494,7 +451,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // 4. Sunny Warm Ambient & Sunlight
+    // 4. Lights
     const ambientLight = new THREE.AmbientLight(0xfffaed, 1.3);
     scene.add(ambientLight);
 
@@ -509,37 +466,8 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     fillLight.position.set(-15, 25, -15);
     scene.add(fillLight);
 
-    // 5. Neighborhood Grid Streets & Sidewalks
-    if (cityConfig.showGrid) {
-      const gridHelper = new THREE.GridHelper(90, 60, currentTheme.grid, 0x334155);
-      gridHelper.position.y = 0.01;
-      scene.add(gridHelper);
-    }
-
-    // Asphalt Highway Ring
-    const roadInner = 12;
-    const roadOuter = 16;
-    const roadGeo = new THREE.RingGeometry(roadInner, roadOuter, 64);
-    const roadMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      roughness: 0.7,
-      side: THREE.DoubleSide
-    });
-    const roadMesh = new THREE.Mesh(roadGeo, roadMat);
-    roadMesh.rotation.x = Math.PI / 2;
-    roadMesh.position.y = 0.02;
-    scene.add(roadMesh);
-
-    // Road Yellow Center Dividers
-    const laneGeo = new THREE.RingGeometry(13.9, 14.1, 64);
-    const laneMat = new THREE.MeshBasicMaterial({ color: 0xf6e05e, side: THREE.DoubleSide });
-    const laneMesh = new THREE.Mesh(laneGeo, laneMat);
-    laneMesh.rotation.x = Math.PI / 2;
-    laneMesh.position.y = 0.03;
-    scene.add(laneMesh);
-
-    // Lush Green Lawn Ground Disc
-    const groundGeo = new THREE.CylinderGeometry(42, 44, 0.4, 48);
+    // 5. Lush Green Lawn Ground Disc
+    const groundGeo = new THREE.CylinderGeometry(46, 48, 0.4, 48);
     const groundMat = new THREE.MeshStandardMaterial({
       color: currentTheme.grass,
       roughness: 0.6,
@@ -550,36 +478,74 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // 6. Build Houses for Each Project (No Spire/Rocket Shapes!)
+    // 🛣️ 6. NEIGHBORHOOD GRID STREET NETWORK (Roads surrounding EVERY house block!)
+    const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xf6e05e });
+
+    // Grid Road Coordinates along X & Z axes
+    const gridCoords = [-24, -12, 0, 12, 24];
+
+    // East-West Streets (X-axis roads)
+    gridCoords.forEach((z) => {
+      const roadGeo = new THREE.BoxGeometry(50, 0.02, 2.8);
+      const roadMesh = new THREE.Mesh(roadGeo, roadMat);
+      roadMesh.position.set(0, 0.02, z);
+      scene.add(roadMesh);
+
+      // Yellow Center Lines
+      const lineGeo = new THREE.BoxGeometry(50, 0.03, 0.15);
+      const lineMesh = new THREE.Mesh(lineGeo, lineMat);
+      lineMesh.position.set(0, 0.03, z);
+      scene.add(lineMesh);
+    });
+
+    // North-South Avenues (Z-axis roads)
+    gridCoords.forEach((x) => {
+      const roadGeo = new THREE.BoxGeometry(2.8, 0.02, 50);
+      const roadMesh = new THREE.Mesh(roadGeo, roadMat);
+      roadMesh.position.set(x, 0.02, 0);
+      scene.add(roadMesh);
+
+      // Yellow Center Lines
+      const lineGeo = new THREE.BoxGeometry(0.15, 0.03, 50);
+      const lineMesh = new THREE.Mesh(lineGeo, lineMat);
+      lineMesh.position.set(x, 0.03, 0);
+      scene.add(lineMesh);
+    });
+
+    // 🏡 7. HOUSE LOT PLACEMENT (Neat Grid Neighborhood Blocks Bounded by Streets on 4 Sides!)
     houseMeshesRef.current = [];
     commitPulsesRef.current = [];
 
     const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
 
+    // Lot Coordinates inside the street grid blocks
+    const lotPositions: { x: number; z: number }[] = [];
+    const blockCenters = [-18, -6, 6, 18];
+
+    blockCenters.forEach((bx) => {
+      blockCenters.forEach((bz) => {
+        lotPositions.push({ x: bx, z: bz });
+      });
+    });
+
     sortedProjects.forEach((proj, idx) => {
-      // Ring Placement along Neighborhood Lots
-      const ringIndex = Math.floor(idx / 8);
-      const posInRing = idx % 8;
+      const lot = lotPositions[idx % lotPositions.length];
+      const x = lot.x;
+      const z = lot.z;
 
-      let ringRadius = 6 + ringIndex * 5;
-      if (ringRadius >= 11 && ringRadius <= 17) {
-        ringRadius = 18 + (ringIndex - 2) * 5;
-      }
-
-      const angle = (posInRing / 8) * Math.PI * 2 + (ringIndex * 0.4);
-      const x = Math.cos(angle) * ringRadius;
-      const z = Math.sin(angle) * ringRadius;
-
-      // Construct Suburban House
+      // Build House
       const houseGroup = createSuburbanHome(proj, idx);
       houseGroup.position.set(x, 0, z);
-      houseGroup.rotation.y = -angle + Math.PI / 2; // Face towards the road/center!
+
+      // Face towards adjacent front street
+      houseGroup.rotation.y = z < 0 ? 0 : Math.PI;
 
       const houseColorHex = proj.buildingColor || '#38bdf8';
 
       // Floating Project Name Signboard
       const labelText = proj.title;
-      const statusBadge = `🏡 SUBURBAN HOUSE • ${proj.commitsCount} COMMITS`;
+      const statusBadge = `🏡 PROJECT HOUSE • ${proj.commitsCount} COMMITS`;
 
       const texture = createProjectSignboardTexture(labelText, statusBadge, houseColorHex);
       const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
@@ -590,15 +556,15 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
       scene.add(houseGroup);
 
-      // Trees & Street Lamps near the house lot
+      // Trees & Street Lamps around house yard
       const treeType = idx % 2 === 0 ? 'oak' : 'pine';
       const treeMesh = createNeighborhoodTree(treeType);
       treeMesh.position.set(x + 2.2, 0, z + 1.2);
       scene.add(treeMesh);
 
-      if (idx % 3 === 0) {
+      if (idx % 2 === 1) {
         const lampMesh = createStreetLamp();
-        lampMesh.position.set(x - 2.0, 0, z + 1.6);
+        lampMesh.position.set(x - 2.0, 0, z + 1.8);
         scene.add(lampMesh);
       }
 
@@ -611,12 +577,13 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         position: housePos
       });
 
-      // Animated Git Commit Energy Pulses ("প্রজেক্টের ভিতর কমেন্ট ঢুকছে")
-      const pulseGeo = new THREE.SphereGeometry(0.18, 12, 12);
+      // Animated Git Commit Energy Pulses ("কমেন্ট রাস্তা দিয়ে বাসার ভেতরে ঢুকছে")
+      const pulseGeo = new THREE.SphereGeometry(0.2, 12, 12);
       const pulseMat = new THREE.MeshBasicMaterial({ color: parseInt(houseColorHex.replace('#', ''), 16) || 0x38bdf8 });
       const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
-      
-      const startPos = new THREE.Vector3(Math.cos(angle) * 14, 0.3, Math.sin(angle) * 14); // Road position
+
+      const nearestStreetZ = z < 0 ? z - 6 : z + 6;
+      const startPos = new THREE.Vector3(x, 0.3, nearestStreetZ);
       pulseMesh.position.copy(startPos);
       scene.add(pulseMesh);
 
@@ -625,32 +592,57 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         startPos,
         targetPos: housePos.clone().add(new THREE.Vector3(0, 0.3, 0)),
         progress: Math.random(),
-        speed: 0.005 + Math.random() * 0.005
+        speed: 0.006 + Math.random() * 0.006
       });
     });
 
-    // 7. Animated Cars on Neighborhood Street
+    // 🚗 8. Animated Cars Driving Along Grid Roads (North-South & East-West)
     vehiclesRef.current = [];
     const carColors = ['38bdf8', 'ef4444', '10b981', 'f59e0b', 'a855f7', 'fdcb6e'];
-    for (let c = 0; c < 8; c++) {
-      const carColor = carColors[c % carColors.length];
-      const carMesh = createSuburbanCar(carColor);
-      const angle = (c / 8) * Math.PI * 2;
-      const radius = 14;
 
-      carMesh.position.set(Math.cos(angle) * radius, 0.05, Math.sin(angle) * radius);
-      carMesh.rotation.y = -angle + Math.PI / 2;
-      scene.add(carMesh);
+    gridCoords.forEach((coord, cIdx) => {
+      if (cIdx % 2 === 0) {
+        // East-West Car
+        const carMesh = createSuburbanCar(carColors[cIdx % carColors.length]);
+        carMesh.rotation.y = Math.PI / 2;
+        scene.add(carMesh);
+        vehiclesRef.current.push({
+          mesh: carMesh,
+          speed: 0.08 + Math.random() * 0.06,
+          direction: 'x',
+          pathCoord: coord,
+          currentPos: -24 + (cIdx * 8)
+        });
+      } else {
+        // North-South Car
+        const carMesh = createSuburbanCar(carColors[cIdx % carColors.length]);
+        scene.add(carMesh);
+        vehiclesRef.current.push({
+          mesh: carMesh,
+          speed: 0.08 + Math.random() * 0.06,
+          direction: 'z',
+          pathCoord: coord,
+          currentPos: -24 + (cIdx * 8)
+        });
+      }
+    });
 
-      vehiclesRef.current.push({
-        mesh: carMesh,
-        speed: 0.006 + Math.random() * 0.004,
-        angle,
-        radius
-      });
-    }
+    // 🔍 9. FULL ZOOMING & TOUCH CONTROLS (Mouse Wheel Scroll-to-Zoom & Touch Pinch-to-Zoom)
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (!cameraRef.current) return;
+      const zoomDelta = e.deltaY * 0.04;
+      const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 2, 0));
+      const newRadius = Math.max(6, Math.min(85, currentRadius + zoomDelta));
 
-    // 8. Raycasting for Mouse Interaction
+      const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 2, 0)).normalize();
+      cameraRef.current.position.copy(dir.multiplyScalar(newRadius).add(new THREE.Vector3(0, 2, 0)));
+      cameraRef.current.lookAt(0, 2, 0);
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    // Raycasting for Mouse Interaction
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -707,10 +699,11 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     container.addEventListener('pointerdown', handlePointerDown);
     container.addEventListener('pointermove', handlePointerMove);
 
-    // 9. Orbit Dragging Logic & Animation Loop
+    // Orbit Dragging Logic & Touch Pinch Zoom
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
     let cameraAngle = 0;
+    let initialPinchDistance = 0;
 
     const onMouseDown = (e: MouseEvent) => {
       isDragging = true;
@@ -726,8 +719,8 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
       camera.position.x = Math.sin(cameraAngle) * currentRadius;
       camera.position.z = Math.cos(cameraAngle) * currentRadius;
-      camera.position.y = Math.max(5, Math.min(50, camera.position.y - deltaY * 0.1));
-      camera.lookAt(0, 3, 0);
+      camera.position.y = Math.max(4, Math.min(60, camera.position.y - deltaY * 0.1));
+      camera.lookAt(0, 2, 0);
 
       previousMousePosition = { x: e.clientX, y: e.clientY };
     };
@@ -736,9 +729,59 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       isDragging = false;
     };
 
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1 && isDragging) {
+        const deltaX = e.touches[0].clientX - previousMousePosition.x;
+        const deltaY = e.touches[0].clientY - previousMousePosition.y;
+
+        cameraAngle += deltaX * 0.005;
+        const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
+        camera.position.x = Math.sin(cameraAngle) * currentRadius;
+        camera.position.z = Math.cos(cameraAngle) * currentRadius;
+        camera.position.y = Math.max(4, Math.min(60, camera.position.y - deltaY * 0.1));
+        camera.lookAt(0, 2, 0);
+
+        previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      } else if (e.touches.length === 2 && cameraRef.current) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const deltaDist = initialPinchDistance - distance;
+
+        const zoomFactor = deltaDist * 0.15;
+        const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 2, 0));
+        const newRadius = Math.max(6, Math.min(85, currentRadius + zoomFactor));
+
+        const direction = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 2, 0)).normalize();
+        cameraRef.current.position.copy(direction.multiplyScalar(newRadius).add(new THREE.Vector3(0, 2, 0)));
+        cameraRef.current.lookAt(0, 2, 0);
+
+        initialPinchDistance = distance;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isDragging = false;
+    };
+
     container.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: true });
+    container.addEventListener('touchend', handleTouchEnd);
 
     // 10. Real-time Animation Loop
     let animationFrameId: number;
@@ -747,18 +790,22 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
       if (cityConfig.autoRotate && !isDragging) {
         cameraAngle += cityConfig.rotationSpeed;
-        const currentRadius = 40;
+        const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
         camera.position.x = Math.sin(cameraAngle) * currentRadius;
         camera.position.z = Math.cos(cameraAngle) * currentRadius;
-        camera.lookAt(0, 3, 0);
+        camera.lookAt(0, 2, 0);
       }
 
-      // Animate Vehicles driving on neighborhood road
+      // Animate Vehicles driving on East-West and North-South grid roads
       vehiclesRef.current.forEach((v) => {
-        v.angle += v.speed;
-        v.mesh.position.x = Math.cos(v.angle) * v.radius;
-        v.mesh.position.z = Math.sin(v.angle) * v.radius;
-        v.mesh.rotation.y = -v.angle + Math.PI / 2;
+        v.currentPos += v.speed;
+        if (v.currentPos > 24) v.currentPos = -24;
+
+        if (v.direction === 'x') {
+          v.mesh.position.set(v.currentPos, 0.05, v.pathCoord);
+        } else {
+          v.mesh.position.set(v.pathCoord, 0.05, v.currentPos);
+        }
       });
 
       // Animate Git Commit Energy Pulses flowing into house doors ("কমেন্ট ঢুকছে")
@@ -768,7 +815,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         cp.mesh.position.lerpVectors(cp.startPos, cp.targetPos, cp.progress);
       });
 
-      // Gentle Scale Highlight on Hover
+      // Scale Highlight on Hover
       houseMeshesRef.current.forEach((item) => {
         const isHovered = item.id === hoveredProjectId;
         if (isHovered) {
@@ -796,11 +843,15 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      container.removeEventListener('wheel', handleWheel);
       container.removeEventListener('pointerdown', handlePointerDown);
       container.removeEventListener('pointermove', handlePointerMove);
       container.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('resize', handleResize);
       if (renderer.domElement) {
         container.removeChild(renderer.domElement);
@@ -816,25 +867,35 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     if (preset === 'overview') {
       cameraRef.current.position.set(34, 28, 40);
     } else if (preset === 'street') {
-      cameraRef.current.position.set(16, 6, 20);
+      cameraRef.current.position.set(16, 5, 20);
     } else if (preset === 'drone') {
       cameraRef.current.position.set(0, 52, 1);
     }
-    cameraRef.current.lookAt(0, 3, 0);
+    cameraRef.current.lookAt(0, 2, 0);
+  };
+
+  const handleZoom = (delta: number) => {
+    playSound('click');
+    if (!cameraRef.current) return;
+    const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 2, 0)).normalize();
+    const currentDist = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 2, 0));
+    const newDist = Math.max(6, Math.min(85, currentDist + delta));
+    cameraRef.current.position.copy(dir.multiplyScalar(newDist).add(new THREE.Vector3(0, 2, 0)));
+    cameraRef.current.lookAt(0, 2, 0);
   };
 
   return (
-    <div className="relative w-full h-full min-h-[500px] overflow-hidden rounded-2xl border border-sky-500/20 glass-panel shadow-2xl">
+    <div className="relative w-full h-full min-h-[520px] overflow-hidden rounded-2xl border border-sky-500/20 glass-panel shadow-2xl">
       {/* 3D WebGL Canvas Viewport */}
       <div ref={mountRef} className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing" />
 
-      {/* Floating 3D HUD Camera Controls */}
-      <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5 pointer-events-auto">
+      {/* Floating 3D HUD Camera & Zoom Controls */}
+      <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-1.5 pointer-events-auto">
         <button
           onClick={() => resetCamera('overview')}
           className={`px-2.5 py-1 rounded-lg text-xs font-mono-code flex items-center gap-1 transition-all border ${
             activeCamPreset === 'overview'
-              ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan'
+              ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan font-bold'
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
@@ -844,7 +905,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
           onClick={() => resetCamera('street')}
           className={`px-2.5 py-1 rounded-lg text-xs font-mono-code flex items-center gap-1 transition-all border ${
             activeCamPreset === 'street'
-              ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan'
+              ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan font-bold'
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
@@ -854,12 +915,30 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
           onClick={() => resetCamera('drone')}
           className={`px-2.5 py-1 rounded-lg text-xs font-mono-code flex items-center gap-1 transition-all border ${
             activeCamPreset === 'drone'
-              ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan'
+              ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan font-bold'
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
           <span>🏠</span> Drone View
         </button>
+
+        {/* Zoom In & Out Buttons */}
+        <div className="flex items-center gap-1 ml-1 pl-1 border-l border-slate-700">
+          <button
+            onClick={() => handleZoom(-6)}
+            title="Zoom In (Scroll Mouse Wheel Up)"
+            className="px-2 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700 text-xs font-mono-code font-bold"
+          >
+            🔍 + Zoom In
+          </button>
+          <button
+            onClick={() => handleZoom(6)}
+            title="Zoom Out (Scroll Mouse Wheel Down)"
+            className="px-2 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700 text-xs font-mono-code font-bold"
+          >
+            🔍 - Zoom Out
+          </button>
+        </div>
       </div>
 
       {/* 3D Neighborhood Legend & Stats Badge */}
@@ -869,10 +948,10 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
           SUBURBAN 3D PROJECT NEIGHBORHOOD
         </div>
         <p className="text-slate-400 text-[10px]">
-          • Real Residential Houses, Streets, Trees & Live Commit Traffic Flow
+          • Grid Streets Surrounding Houses • Live Commit Motion Flow Into Front Doors
         </p>
         <p className="text-slate-400 text-[10px]">
-          • Inspect: Click any Project House
+          • Controls: Mouse Wheel Scroll / Touch Pinch to Zoom • Drag Mouse to Orbit Rotate
         </p>
         <div className="mt-1.5 pt-1.5 border-t border-slate-800 flex items-center gap-2 text-slate-300 text-[11px]">
           <span>Houses: <strong className="text-sky-300">{projects.length}</strong></span>

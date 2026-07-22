@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Volume2, VolumeX, Shield, Box, Menu, X, RefreshCw } from 'lucide-react';
+import { Volume2, VolumeX, Box, Menu, X, RefreshCw } from 'lucide-react';
 import { isAudioMuted, toggleAudioMute, playSound } from '../../utils/storage';
 
 interface NavbarProps {
-  onOpenAdmin: () => void;
   activeSection: string;
   onNavigate: (sectionId: string) => void;
   onSyncGitHub: () => void;
@@ -11,7 +10,6 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onOpenAdmin,
   activeSection,
   onNavigate,
   onSyncGitHub,
@@ -117,18 +115,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 animate-pulse" />}
           </button>
-
-          {/* Admin Panel Launch Button */}
-          <button
-            onClick={() => {
-              playSound('admin');
-              onOpenAdmin();
-            }}
-            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-500 hover:from-purple-500 hover:to-sky-400 text-white font-mono-code text-[11px] font-bold flex items-center gap-1.5 shadow-lg glow-purple transition-all border border-purple-400/30"
-          >
-            <Shield className="w-3.5 h-3.5 text-sky-300" />
-            <span>ADMIN (/admin)</span>
-          </button>
         </div>
 
         {/* Mobile Menu Controls */}
@@ -194,18 +180,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
               <span>LIVE GITHUB SYNC (prottoybiswas01)</span>
-            </button>
-
-            <button
-              onClick={() => {
-                playSound('admin');
-                onOpenAdmin();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-600 to-sky-500 text-white font-mono-code text-xs font-bold flex items-center justify-center gap-2"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>ACCESS ADMIN PANEL (/admin)</span>
             </button>
           </div>
         </div>

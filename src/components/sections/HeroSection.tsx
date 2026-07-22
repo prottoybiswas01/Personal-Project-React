@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ProfileInfo, Project, CityConfig } from '../../types/portfolio';
 import { CityCanvas } from '../3d/CityCanvas';
-import { ArrowRight, Shield, RefreshCw } from 'lucide-react';
+import { ArrowRight, RefreshCw } from 'lucide-react';
 import { playSound } from '../../utils/storage';
 
 interface HeroSectionProps {
@@ -10,7 +10,6 @@ interface HeroSectionProps {
   cityConfig: CityConfig;
   onUpdateCityConfig: (newConfig: Partial<CityConfig>) => void;
   onSelectProject: (project: Project) => void;
-  onOpenAdmin: () => void;
   onSyncGitHub: () => void;
   isSyncingGitHub?: boolean;
 }
@@ -21,7 +20,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   cityConfig,
   onUpdateCityConfig,
   onSelectProject,
-  onOpenAdmin,
   onSyncGitHub,
   isSyncingGitHub = false,
 }) => {
@@ -105,26 +103,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               onClick={() => playSound('click')}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white font-mono-code text-xs font-bold flex items-center gap-2 shadow-lg glow-cyan transition-all"
             >
-              <span>TOP PROJECTS (6)</span>
+              <span>EXPLORE ALL PROJECTS</span>
               <ArrowRight className="w-4 h-4" />
             </a>
-
-            <button
-              onClick={() => {
-                playSound('admin');
-                onOpenAdmin();
-              }}
-              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-mono-code text-xs font-bold flex items-center gap-2 transition-all"
-            >
-              <Shield className="w-4 h-4 text-purple-400" />
-              <span>ADMIN PANEL</span>
-            </button>
           </div>
 
         </div>
 
-        {/* Right Column: Interactive 3D GitHub City Viewport (ALL 48 BUILDINGS RENDERED HERE) */}
-        <div className="lg:col-span-7 h-[420px] sm:h-[500px] lg:h-[540px] relative">
+        {/* Right Column: Interactive 3D Neighborhood Viewport */}
+        <div className="lg:col-span-7 h-[520px] sm:h-[620px] lg:h-[680px] relative">
           
           <CityCanvas
             projects={projects}
