@@ -12,35 +12,108 @@ interface CityCanvasProps {
 }
 
 // Floating Signboard Canvas Texture for Project Names
-function createProjectSignboardTexture(text: string, status: string, colorHex: string): THREE.CanvasTexture {
+function createProjectSignboardTexture(title: string, commits: number, floors: number, colorHex: string): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
-  canvas.height = 128;
+  canvas.height = 130;
   const ctx = canvas.getContext('2d');
 
   if (ctx) {
+    // Glassmorphic Signboard Card Background
     ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
     ctx.beginPath();
-    ctx.roundRect(10, 10, 492, 108, 20);
+    ctx.roundRect(10, 10, 492, 110, 20);
     ctx.fill();
 
+    // Vibrant Glow Border
     ctx.strokeStyle = colorHex || '#38bdf8';
     ctx.lineWidth = 5;
     ctx.stroke();
 
+    // Title Text
     ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText(text.length > 24 ? text.substring(0, 22) + '...' : text, 256, 52);
+    ctx.fillText(title.length > 24 ? title.substring(0, 22) + '...' : title, 256, 52);
 
+    // Status / Commit Badge
     ctx.font = 'bold 18px "Fira Code", monospace';
     ctx.fillStyle = colorHex || '#38bdf8';
-    ctx.fillText(status, 256, 92);
+    ctx.fillText(`🏠 ${floors} FLOORS • ${commits} COMMITS`, 256, 92);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.needsUpdate = true;
   return texture;
+}
+
+// 🦅 3D Animated Flying Bird Generator
+function create3DBird(): { group: THREE.Group; leftWing: THREE.Mesh; rightWing: THREE.Mesh } {
+  const birdGroup = new THREE.Group();
+
+  // Bird Body
+  const bodyGeo = new THREE.ConeGeometry(0.12, 0.5, 6);
+  bodyGeo.rotateX(Math.PI / 2);
+  const birdMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+  const bodyMesh = new THREE.Mesh(bodyGeo, birdMat);
+  birdGroup.add(bodyMesh);
+
+  // Left Wing
+  const wingGeo = new THREE.BoxGeometry(0.45, 0.03, 0.2);
+  const leftWing = new THREE.Mesh(wingGeo, birdMat);
+  leftWing.position.set(-0.24, 0, 0);
+  birdGroup.add(leftWing);
+
+  // Right Wing
+  const rightWing = new THREE.Mesh(wingGeo, birdMat);
+  rightWing.position.set(0.24, 0, 0);
+  birdGroup.add(rightWing);
+
+  birdGroup.scale.set(1.2, 1.2, 1.2);
+  return { group: birdGroup, leftWing, rightWing };
+}
+
+// 🐕 3D Animated Neighborhood Animal Generator (Cute Pet / Deer)
+function createNeighborhoodAnimal(type: 'dog' | 'deer'): THREE.Group {
+  const animalGroup = new THREE.Group();
+
+  const color = type === 'dog' ? 0xd69e2e : 0x8d5b4c;
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.6 });
+
+  // Body
+  const bodyGeo = new THREE.BoxGeometry(0.45, 0.35, 0.7);
+  const bodyMesh = new THREE.Mesh(bodyGeo, mat);
+  bodyMesh.position.y = 0.35;
+  bodyMesh.castShadow = true;
+  animalGroup.add(bodyMesh);
+
+  // Head
+  const headGeo = new THREE.BoxGeometry(0.3, 0.28, 0.35);
+  const headMesh = new THREE.Mesh(headGeo, mat);
+  headMesh.position.set(0, 0.55, 0.38);
+  animalGroup.add(headMesh);
+
+  // Legs (4 legs)
+  const legGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 8);
+  [
+    [-0.18, 0.15, 0.22],
+    [0.18, 0.15, 0.22],
+    [-0.18, 0.15, -0.22],
+    [0.18, 0.15, -0.22],
+  ].forEach(([lx, ly, lz]) => {
+    const legMesh = new THREE.Mesh(legGeo, mat);
+    legMesh.position.set(lx, ly, lz);
+    animalGroup.add(legMesh);
+  });
+
+  // Tail
+  const tailGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.25, 6);
+  const tailMesh = new THREE.Mesh(tailGeo, mat);
+  tailMesh.position.set(0, 0.45, -0.4);
+  tailMesh.rotation.x = -Math.PI / 4;
+  animalGroup.add(tailMesh);
+
+  return animalGroup;
 }
 
 // 🚗 Neighborhood Car Generator
@@ -59,11 +132,7 @@ function createSuburbanCar(colorHex: string): THREE.Group {
   carGroup.add(bodyMesh);
 
   const cabinGeo = new THREE.BoxGeometry(0.75, 0.38, 0.75);
-  const cabinMat = new THREE.MeshStandardMaterial({
-    color: 0x1e293b,
-    roughness: 0.1,
-    metalness: 0.8,
-  });
+  const cabinMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.1, metalness: 0.8 });
   const cabinMesh = new THREE.Mesh(cabinGeo, cabinMat);
   cabinMesh.position.set(0, 0.65, -0.05);
   carGroup.add(cabinMesh);
@@ -149,11 +218,17 @@ function createStreetLamp(): THREE.Group {
   return lampGroup;
 }
 
-// 🏡 REALISTIC SUBURBAN PROJECT HOUSE BUILDER (5 Authentic House Archetypes)
-function createSuburbanHome(proj: Project, idx: number): THREE.Group {
-  const houseGroup = new THREE.Group();
+// 🏢 MULTI-STORY SUBURBAN BUILDING BUILDER (Floors Scale with Commit Count!)
+function createMultiStoryBuilding(proj: Project, idx: number): THREE.Group {
+  const buildingGroup = new THREE.Group();
 
-  const housePalettes = [
+  // Commit count drives multi-story height! (e.g. 50 commits = 25 floors, 10 commits = 5 floors)
+  const floors = Math.max(2, Math.min(30, Math.floor(proj.commitsCount / 2)));
+  const floorHeight = 0.6;
+  const totalBuildingHeight = floors * floorHeight;
+
+  // House & Building Color Palettes
+  const palettes = [
     { wall: 0xf7fafc, roof: 0x2d3748, trim: 0xffffff, door: 0x742a2a }, // Classic Cream & Slate Roof
     { wall: 0xebf8ff, roof: 0x2b6cb0, trim: 0xe2e8f0, door: 0xd69e2e }, // Soft Blue Villa
     { wall: 0x9b2c2c, roof: 0x1a202c, trim: 0xffffff, door: 0x4a5568 }, // Red Brick Cottage
@@ -161,7 +236,7 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     { wall: 0xe6fffa, roof: 0x234e52, trim: 0xe2e8f0, door: 0x805ad5 }, // Mint Coastal Home
   ];
 
-  const palette = housePalettes[idx % housePalettes.length];
+  const palette = palettes[idx % palettes.length];
   const customWallColor = proj.buildingColor ? parseInt(proj.buildingColor.replace('#', '0x')) : palette.wall;
 
   const wallMat = new THREE.MeshStandardMaterial({ color: customWallColor, roughness: 0.4, metalness: 0.05 });
@@ -175,225 +250,102 @@ function createSuburbanHome(proj: Project, idx: number): THREE.Group {
     roughness: 0.1,
   });
 
-  const styleType = idx % 5;
+  const w = 2.6;
+  const d = 2.4;
 
-  if (styleType === 0) {
-    const w = 2.6;
-    const h = 2.2;
-    const d = 2.4;
+  // 1. Foundation Base Pad
+  const baseGeo = new THREE.BoxGeometry(w + 0.2, 0.2, d + 0.2);
+  const baseMesh = new THREE.Mesh(baseGeo, trimMat);
+  baseMesh.position.y = 0.1;
+  buildingGroup.add(baseMesh);
 
-    const wallGeo = new THREE.BoxGeometry(w, h, d);
-    const wallMesh = new THREE.Mesh(wallGeo, wallMat);
-    wallMesh.position.y = 0.2 + h / 2;
-    wallMesh.castShadow = true;
-    wallMesh.receiveShadow = true;
-    houseGroup.add(wallMesh);
+  // 2. Multi-Story Floor Stack (Each floor rendered with windows & balcony trims!)
+  for (let f = 0; f < floors; f++) {
+    const floorY = 0.2 + f * floorHeight + floorHeight / 2;
 
-    const eaveGeo = new THREE.BoxGeometry(w + 0.3, 0.14, d + 0.3);
-    const eaveMesh = new THREE.Mesh(eaveGeo, trimMat);
-    eaveMesh.position.y = 0.2 + h;
-    houseGroup.add(eaveMesh);
+    const floorGeo = new THREE.BoxGeometry(w, floorHeight * 0.92, d);
+    const floorMesh = new THREE.Mesh(floorGeo, wallMat);
+    floorMesh.position.y = floorY;
+    floorMesh.castShadow = true;
+    floorMesh.receiveShadow = true;
+    buildingGroup.add(floorMesh);
 
-    const roofH = 1.3;
-    const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.2), roofH, 4);
-    const roofMesh = new THREE.Mesh(roofGeo, roofMat);
-    roofMesh.rotation.y = Math.PI / 4;
-    roofMesh.position.y = 0.2 + h + 0.07 + roofH / 2;
-    roofMesh.castShadow = true;
-    houseGroup.add(roofMesh);
-
-    const porchRoofGeo = new THREE.BoxGeometry(1.4, 0.12, 0.8);
-    const porchRoofMesh = new THREE.Mesh(porchRoofGeo, roofMat);
-    porchRoofMesh.position.set(0, 0.2 + 1.1, d / 2 + 0.4);
-    houseGroup.add(porchRoofMesh);
-
-    [-0.55, 0.55].forEach(px => {
-      const colGeo = new THREE.CylinderGeometry(0.05, 0.06, 1.1, 8);
-      const colMesh = new THREE.Mesh(colGeo, trimMat);
-      colMesh.position.set(px, 0.2 + 0.55, d / 2 + 0.7);
-      houseGroup.add(colMesh);
-    });
-
-    const doorGeo = new THREE.BoxGeometry(0.55, 0.9, 0.06);
-    const doorMesh = new THREE.Mesh(doorGeo, doorMat);
-    doorMesh.position.set(0, 0.2 + 0.45, d / 2 + 0.04);
-    houseGroup.add(doorMesh);
-
-    const knobGeo = new THREE.SphereGeometry(0.04, 8, 8);
-    const knobMesh = new THREE.Mesh(knobGeo, new THREE.MeshStandardMaterial({ color: 0xd69e2e, metalness: 0.8 }));
-    knobMesh.position.set(0.2, 0.2 + 0.45, d / 2 + 0.08);
-    houseGroup.add(knobMesh);
-
-    [
-      [-0.7, 0.6], [0.7, 0.6],
-      [-0.7, 1.6], [0.7, 1.6]
-    ].forEach(([wx, wy]) => {
-      const frameGeo = new THREE.BoxGeometry(0.44, 0.52, 0.06);
-      const frameMesh = new THREE.Mesh(frameGeo, trimMat);
-      frameMesh.position.set(wx, 0.2 + wy, d / 2 + 0.03);
-      houseGroup.add(frameMesh);
-
-      const winGeo = new THREE.BoxGeometry(0.36, 0.44, 0.08);
-      const winMesh = new THREE.Mesh(winGeo, windowMat);
-      winMesh.position.set(wx, 0.2 + wy, d / 2 + 0.04);
-      houseGroup.add(winMesh);
-    });
-
-    const chimneyGeo = new THREE.BoxGeometry(0.35, 1.0, 0.35);
-    const chimneyMat = new THREE.MeshStandardMaterial({ color: 0x742a2a });
-    const chimneyMesh = new THREE.Mesh(chimneyGeo, chimneyMat);
-    chimneyMesh.position.set(0.7, 0.2 + h + 0.5, 0.3);
-    houseGroup.add(chimneyMesh);
-
-    for (let s = 0; s < 3; s++) {
-      const smokeGeo = new THREE.SphereGeometry(0.12 + s * 0.06, 8, 8);
-      const smokeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 - s * 0.18 });
-      const smokeMesh = new THREE.Mesh(smokeGeo, smokeMat);
-      smokeMesh.position.set(0.7 + (s % 2 === 0 ? 0.04 : -0.04), 0.2 + h + 1.1 + s * 0.25, 0.3);
-      houseGroup.add(smokeMesh);
+    // Floor Division Trim Line
+    if (f > 0) {
+      const divGeo = new THREE.BoxGeometry(w + 0.1, 0.08, d + 0.1);
+      const divMesh = new THREE.Mesh(divGeo, trimMat);
+      divMesh.position.y = 0.2 + f * floorHeight;
+      buildingGroup.add(divMesh);
     }
 
-  } else if (styleType === 1) {
-    const w = 2.8;
-    const h = 2.0;
-    const d = 2.4;
+    // Windows on Front & Back of each floor
+    if (f === 0) {
+      // Ground Floor Entrance Door & Porch
+      const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.06);
+      const doorMesh = new THREE.Mesh(doorGeo, doorMat);
+      doorMesh.position.set(0, 0.2 + 0.42, d / 2 + 0.04);
+      buildingGroup.add(doorMesh);
 
-    const wallGeo = new THREE.BoxGeometry(w, h * 0.5, d);
-    const wallMesh = new THREE.Mesh(wallGeo, wallMat);
-    wallMesh.position.y = 0.2 + h * 0.25;
-    wallMesh.castShadow = true;
-    houseGroup.add(wallMesh);
+      // Porch Columns
+      const porchRoofGeo = new THREE.BoxGeometry(1.4, 0.1, 0.7);
+      const porchRoofMesh = new THREE.Mesh(porchRoofGeo, roofMat);
+      porchRoofMesh.position.set(0, 0.2 + 0.9, d / 2 + 0.35);
+      buildingGroup.add(porchRoofMesh);
 
-    const upperGeo = new THREE.BoxGeometry(w * 0.9, h * 0.5, d * 0.9);
-    const upperMesh = new THREE.Mesh(upperGeo, new THREE.MeshStandardMaterial({ color: 0x2d3748, roughness: 0.2 }));
-    upperMesh.position.set(0.2, 0.2 + h * 0.75, 0);
-    upperMesh.castShadow = true;
-    houseGroup.add(upperMesh);
+      [-0.55, 0.55].forEach(px => {
+        const colGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.9, 8);
+        const colMesh = new THREE.Mesh(colGeo, trimMat);
+        colMesh.position.set(px, 0.2 + 0.45, d / 2 + 0.65);
+        buildingGroup.add(colMesh);
+      });
+    } else {
+      // Upper Floor Windows & Balcony Trims
+      [-0.7, 0.7].forEach(wx => {
+        const frameGeo = new THREE.BoxGeometry(0.44, 0.42, 0.06);
+        const frameMesh = new THREE.Mesh(frameGeo, trimMat);
+        frameMesh.position.set(wx, floorY, d / 2 + 0.03);
+        buildingGroup.add(frameMesh);
 
-    const roofGeo = new THREE.BoxGeometry(w * 0.95, 0.12, d * 0.95);
-    const roofMesh = new THREE.Mesh(roofGeo, trimMat);
-    roofMesh.position.set(0.2, 0.2 + h + 0.06, 0);
-    houseGroup.add(roofMesh);
-
-    const winGeo = new THREE.BoxGeometry(w * 0.7, h * 0.35, 0.08);
-    const winMesh = new THREE.Mesh(winGeo, windowMat);
-    winMesh.position.set(0.2, 0.2 + h * 0.75, d * 0.45 + 0.02);
-    houseGroup.add(winMesh);
-
-    const pergolaGeo = new THREE.BoxGeometry(1.6, 0.08, 0.7);
-    const pergolaMat = new THREE.MeshStandardMaterial({ color: 0x8d5b4c });
-    const pergolaMesh = new THREE.Mesh(pergolaGeo, pergolaMat);
-    pergolaMesh.position.set(-0.2, 0.2 + h * 0.5, d / 2 + 0.35);
-    houseGroup.add(pergolaMesh);
-
-    const doorGeo = new THREE.BoxGeometry(0.6, 0.85, 0.06);
-    const doorMesh = new THREE.Mesh(doorGeo, doorMat);
-    doorMesh.position.set(-0.2, 0.2 + 0.42, d / 2 + 0.04);
-    houseGroup.add(doorMesh);
-
-  } else if (styleType === 2) {
-    const w = 2.4;
-    const h = 1.9;
-    const d = 2.3;
-
-    const wallGeo = new THREE.BoxGeometry(w, h, d);
-    const wallMesh = new THREE.Mesh(wallGeo, new THREE.MeshStandardMaterial({ color: 0x9b2c2c, roughness: 0.7 }));
-    wallMesh.position.y = 0.2 + h / 2;
-    wallMesh.castShadow = true;
-    houseGroup.add(wallMesh);
-
-    const roofH = 1.4;
-    const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.2), roofH, 4);
-    const roofMesh = new THREE.Mesh(roofGeo, roofMat);
-    roofMesh.rotation.y = Math.PI / 4;
-    roofMesh.position.y = 0.2 + h + roofH / 2;
-    roofMesh.castShadow = true;
-    houseGroup.add(roofMesh);
-
-    const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.06);
-    const doorMesh = new THREE.Mesh(doorGeo, doorMat);
-    doorMesh.position.set(0, 0.2 + 0.42, d / 2 + 0.04);
-    houseGroup.add(doorMesh);
-
-    const dormerGeo = new THREE.BoxGeometry(0.5, 0.45, 0.4);
-    const dormerMesh = new THREE.Mesh(dormerGeo, trimMat);
-    dormerMesh.position.set(0, 0.2 + h + 0.4, d / 2 - 0.2);
-    houseGroup.add(dormerMesh);
-
-    const dormerWin = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.32, 0.08), windowMat);
-    dormerWin.position.set(0, 0.2 + h + 0.4, d / 2 + 0.01);
-    houseGroup.add(dormerWin);
-
-  } else if (styleType === 3) {
-    const w = 2.2;
-    const h = 2.4;
-    const d = 2.2;
-
-    const wallGeo = new THREE.BoxGeometry(w, h, d);
-    const wallMesh = new THREE.Mesh(wallGeo, wallMat);
-    wallMesh.position.y = 0.2 + h / 2;
-    wallMesh.castShadow = true;
-    houseGroup.add(wallMesh);
-
-    const roofH = 1.1;
-    const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.15), roofH, 4);
-    const roofMesh = new THREE.Mesh(roofGeo, roofMat);
-    roofMesh.rotation.y = Math.PI / 4;
-    roofMesh.position.y = 0.2 + h + roofH / 2;
-    houseGroup.add(roofMesh);
-
-    const balcGeo = new THREE.BoxGeometry(1.6, 0.12, 0.35);
-    const balcMesh = new THREE.Mesh(balcGeo, new THREE.MeshStandardMaterial({ color: 0x1a202c }));
-    balcMesh.position.set(0, 0.2 + 1.25, d / 2 + 0.15);
-    houseGroup.add(balcMesh);
-
-    const frenchDoorGeo = new THREE.BoxGeometry(0.8, 0.7, 0.06);
-    const frenchDoorMesh = new THREE.Mesh(frenchDoorGeo, windowMat);
-    frenchDoorMesh.position.set(0, 0.2 + 1.6, d / 2 + 0.04);
-    houseGroup.add(frenchDoorMesh);
-
-    const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.06);
-    const doorMesh = new THREE.Mesh(doorGeo, doorMat);
-    doorMesh.position.set(0, 0.2 + 0.42, d / 2 + 0.04);
-    houseGroup.add(doorMesh);
-
-  } else {
-    const w = 2.5;
-    const h = 1.8;
-    const d = 2.4;
-
-    const baseGeo = new THREE.BoxGeometry(w + 0.1, 0.4, d + 0.1);
-    const baseMesh = new THREE.Mesh(baseGeo, new THREE.MeshStandardMaterial({ color: 0x4a5568, roughness: 0.8 }));
-    baseMesh.position.y = 0.4;
-    houseGroup.add(baseMesh);
-
-    const wallGeo = new THREE.BoxGeometry(w, h - 0.4, d);
-    const wallMesh = new THREE.Mesh(wallGeo, wallMat);
-    wallMesh.position.y = 0.6 + (h - 0.4) / 2;
-    wallMesh.castShadow = true;
-    houseGroup.add(wallMesh);
-
-    const roofH = 1.2;
-    const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.3), roofH, 4);
-    const roofMesh = new THREE.Mesh(roofGeo, roofMat);
-    roofMesh.rotation.y = Math.PI / 4;
-    roofMesh.position.y = 0.2 + h + roofH / 2;
-    houseGroup.add(roofMesh);
-
-    const doorGeo = new THREE.BoxGeometry(0.55, 0.85, 0.06);
-    const doorMesh = new THREE.Mesh(doorGeo, doorMat);
-    doorMesh.position.set(0, 0.2 + 0.6, d / 2 + 0.04);
-    houseGroup.add(doorMesh);
+        const winGeo = new THREE.BoxGeometry(0.36, 0.34, 0.08);
+        const winMesh = new THREE.Mesh(winGeo, windowMat);
+        winMesh.position.set(wx, floorY, d / 2 + 0.04);
+        buildingGroup.add(winMesh);
+      });
+    }
   }
 
-  // Concrete Driveway Path connecting front door to street
+  // 3. Roof Top Cap (Sloped Gable Roof or Terrace Cap)
+  const roofH = 1.3;
+  const roofGeo = new THREE.CylinderGeometry(0, Math.sqrt(2) * (w / 2 + 0.2), roofH, 4);
+  const roofMesh = new THREE.Mesh(roofGeo, roofMat);
+  roofMesh.rotation.y = Math.PI / 4;
+  roofMesh.position.y = 0.2 + totalBuildingHeight + roofH / 2;
+  roofMesh.castShadow = true;
+  buildingGroup.add(roofMesh);
+
+  // Chimney & Smoke
+  const chimneyGeo = new THREE.BoxGeometry(0.35, 1.0, 0.35);
+  const chimneyMat = new THREE.MeshStandardMaterial({ color: 0x742a2a });
+  const chimneyMesh = new THREE.Mesh(chimneyGeo, chimneyMat);
+  chimneyMesh.position.set(0.7, 0.2 + totalBuildingHeight + 0.5, 0.3);
+  buildingGroup.add(chimneyMesh);
+
+  for (let s = 0; s < 3; s++) {
+    const smokeGeo = new THREE.SphereGeometry(0.12 + s * 0.06, 8, 8);
+    const smokeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 - s * 0.18 });
+    const smokeMesh = new THREE.Mesh(smokeGeo, smokeMat);
+    smokeMesh.position.set(0.7 + (s % 2 === 0 ? 0.04 : -0.04), 0.2 + totalBuildingHeight + 1.1 + s * 0.25, 0.3);
+    buildingGroup.add(smokeMesh);
+  }
+
+  // Driveway connecting house to main street
   const driveGeo = new THREE.BoxGeometry(1.0, 0.02, 2.2);
   const driveMat = new THREE.MeshStandardMaterial({ color: 0x4a5568, roughness: 0.8 });
   const driveMesh = new THREE.Mesh(driveGeo, driveMat);
   driveMesh.position.set(0, 0.01, 1.9);
-  houseGroup.add(driveMesh);
+  buildingGroup.add(driveMesh);
 
-  return houseGroup;
+  return buildingGroup;
 }
 
 export const CityCanvas: React.FC<CityCanvasProps> = ({
@@ -409,6 +361,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const houseMeshesRef = useRef<{ id: string; mesh: THREE.Group; baseColor: string; project: Project; position: THREE.Vector3 }[]>([]);
   const vehiclesRef = useRef<{ mesh: THREE.Group; speed: number; direction: 'x' | 'z'; pathCoord: number; currentPos: number }[]>([]);
+  const birdsRef = useRef<{ group: THREE.Group; leftWing: THREE.Mesh; rightWing: THREE.Mesh; angle: number; speed: number; radius: number; altitude: number }[]>([]);
   const commitPulsesRef = useRef<{ mesh: THREE.Mesh; startPos: THREE.Vector3; targetPos: THREE.Vector3; progress: number; speed: number }[]>([]);
 
   const [activeCamPreset, setActiveCamPreset] = useState<'overview' | 'street' | 'drone'>('overview');
@@ -432,13 +385,13 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     const currentTheme = themeColors[cityConfig.theme] || themeColors.cyberpunk;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(currentTheme.sky);
-    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.006);
+    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.004);
     sceneRef.current = scene;
 
     // 2. Camera Setup
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(34, 28, 40);
-    camera.lookAt(0, 2, 0);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1200);
+    camera.position.set(48, 38, 55);
+    camera.lookAt(0, 4, 0);
     cameraRef.current = camera;
 
     // 3. Renderer Setup
@@ -452,22 +405,22 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     rendererRef.current = renderer;
 
     // 4. Lights
-    const ambientLight = new THREE.AmbientLight(0xfffaed, 1.3);
+    const ambientLight = new THREE.AmbientLight(0xfffaed, 1.4);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff3bf, 1.8);
-    sunLight.position.set(35, 45, 25);
+    const sunLight = new THREE.DirectionalLight(0xfff3bf, 1.9);
+    sunLight.position.set(45, 60, 35);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
     sunLight.shadow.mapSize.height = 2048;
     scene.add(sunLight);
 
-    const fillLight = new THREE.PointLight(currentTheme.light2, 2.5, 70);
-    fillLight.position.set(-15, 25, -15);
+    const fillLight = new THREE.PointLight(currentTheme.light2, 2.5, 90);
+    fillLight.position.set(-20, 35, -20);
     scene.add(fillLight);
 
-    // 5. Lush Green Lawn Ground Disc
-    const groundGeo = new THREE.CylinderGeometry(46, 48, 0.4, 48);
+    // 5. Expanded Green Lawn Ground Disc
+    const groundGeo = new THREE.CylinderGeometry(65, 68, 0.4, 64);
     const groundMat = new THREE.MeshStandardMaterial({
       color: currentTheme.grass,
       roughness: 0.6,
@@ -478,112 +431,108 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // 🛣️ 6. NEIGHBORHOOD GRID STREET NETWORK (Roads surrounding EVERY house block!)
+    // 🛣️ 6. NEIGHBORHOOD GRID STREET NETWORK (Roads Surrounding ALL 48 House Blocks!)
     const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
     const lineMat = new THREE.MeshBasicMaterial({ color: 0xf6e05e });
 
-    // Grid Road Coordinates along X & Z axes
-    const gridCoords = [-24, -12, 0, 12, 24];
+    // Grid Coordinates along X & Z for 8 Columns × 6 Rows neighborhood layout
+    const gridXCoords = [-36, -26, -16, -6, 4, 14, 24, 34];
+    const gridZCoords = [-28, -18, -8, 2, 12, 22];
 
-    // East-West Streets (X-axis roads)
-    gridCoords.forEach((z) => {
-      const roadGeo = new THREE.BoxGeometry(50, 0.02, 2.8);
+    // East-West Streets
+    gridZCoords.forEach((z) => {
+      const roadGeo = new THREE.BoxGeometry(80, 0.02, 2.8);
       const roadMesh = new THREE.Mesh(roadGeo, roadMat);
       roadMesh.position.set(0, 0.02, z);
       scene.add(roadMesh);
 
-      // Yellow Center Lines
-      const lineGeo = new THREE.BoxGeometry(50, 0.03, 0.15);
+      const lineGeo = new THREE.BoxGeometry(80, 0.03, 0.15);
       const lineMesh = new THREE.Mesh(lineGeo, lineMat);
       lineMesh.position.set(0, 0.03, z);
       scene.add(lineMesh);
     });
 
-    // North-South Avenues (Z-axis roads)
-    gridCoords.forEach((x) => {
-      const roadGeo = new THREE.BoxGeometry(2.8, 0.02, 50);
+    // North-South Avenues
+    gridXCoords.forEach((x) => {
+      const roadGeo = new THREE.BoxGeometry(2.8, 0.02, 60);
       const roadMesh = new THREE.Mesh(roadGeo, roadMat);
       roadMesh.position.set(x, 0.02, 0);
       scene.add(roadMesh);
 
-      // Yellow Center Lines
-      const lineGeo = new THREE.BoxGeometry(0.15, 0.03, 50);
+      const lineGeo = new THREE.BoxGeometry(0.15, 0.03, 60);
       const lineMesh = new THREE.Mesh(lineGeo, lineMat);
       lineMesh.position.set(x, 0.03, 0);
       scene.add(lineMesh);
     });
 
-    // 🏡 7. HOUSE LOT PLACEMENT (Neat Grid Neighborhood Blocks Bounded by Streets on 4 Sides!)
+    // 🏡 7. ALL 48 PROJECTS SERIAL NEIGHBORHOOD PLACEMENT
     houseMeshesRef.current = [];
     commitPulsesRef.current = [];
 
     const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
 
-    // Lot Coordinates inside the street grid blocks
-    const lotPositions: { x: number; z: number }[] = [];
-    const blockCenters = [-18, -6, 6, 18];
-
-    blockCenters.forEach((bx) => {
-      blockCenters.forEach((bz) => {
-        lotPositions.push({ x: bx, z: bz });
-      });
-    });
-
+    // Calculate Serial Position for EVERY project in sequence (8 columns × 6 rows = 48 lots)
     sortedProjects.forEach((proj, idx) => {
-      const lot = lotPositions[idx % lotPositions.length];
-      const x = lot.x;
-      const z = lot.z;
+      const col = idx % 8;
+      const row = Math.floor(idx / 8);
 
-      // Build House
-      const houseGroup = createSuburbanHome(proj, idx);
-      houseGroup.position.set(x, 0, z);
+      const x = -31 + col * 9;
+      const z = -23 + row * 10;
 
-      // Face towards adjacent front street
-      houseGroup.rotation.y = z < 0 ? 0 : Math.PI;
+      // Construct Multi-Story Building/House (Height scales with commits!)
+      const buildingGroup = createMultiStoryBuilding(proj, idx);
+      buildingGroup.position.set(x, 0, z);
+      buildingGroup.rotation.y = row % 2 === 0 ? 0 : Math.PI;
 
       const houseColorHex = proj.buildingColor || '#38bdf8';
+      const floors = Math.max(2, Math.min(30, Math.floor(proj.commitsCount / 2)));
+      const totalBuildingHeight = floors * 0.6;
 
-      // Floating Project Name Signboard
-      const labelText = proj.title;
-      const statusBadge = `🏡 PROJECT HOUSE • ${proj.commitsCount} COMMITS`;
-
-      const texture = createProjectSignboardTexture(labelText, statusBadge, houseColorHex);
+      // Floating Project Name Signboard Above Building Top
+      const texture = createProjectSignboardTexture(proj.title, proj.commitsCount, floors, houseColorHex);
       const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
       const labelSprite = new THREE.Sprite(spriteMat);
-      labelSprite.position.set(0, 4.2, 0);
+      labelSprite.position.set(0, 0.4 + totalBuildingHeight + 2.4, 0);
       labelSprite.scale.set(7.2, 1.8, 1);
-      houseGroup.add(labelSprite);
+      buildingGroup.add(labelSprite);
 
-      scene.add(houseGroup);
+      scene.add(buildingGroup);
 
-      // Trees & Street Lamps around house yard
+      // Trees & Street Lamps around lot
       const treeType = idx % 2 === 0 ? 'oak' : 'pine';
       const treeMesh = createNeighborhoodTree(treeType);
-      treeMesh.position.set(x + 2.2, 0, z + 1.2);
+      treeMesh.position.set(x + 2.4, 0, z + 1.4);
       scene.add(treeMesh);
 
-      if (idx % 2 === 1) {
+      if (idx % 3 === 0) {
         const lampMesh = createStreetLamp();
-        lampMesh.position.set(x - 2.0, 0, z + 1.8);
+        lampMesh.position.set(x - 2.2, 0, z + 1.8);
         scene.add(lampMesh);
+      }
+
+      // Add Neighborhood Animals (Dogs/Deer on grass lots)
+      if (idx % 4 === 0) {
+        const animalMesh = createNeighborhoodAnimal(idx % 8 === 0 ? 'deer' : 'dog');
+        animalMesh.position.set(x - 2.2, 0, z - 1.2);
+        animalMesh.rotation.y = Math.random() * Math.PI * 2;
+        scene.add(animalMesh);
       }
 
       const housePos = new THREE.Vector3(x, 0, z);
       houseMeshesRef.current.push({
         id: proj.id,
-        mesh: houseGroup,
+        mesh: buildingGroup,
         baseColor: houseColorHex,
         project: proj,
         position: housePos
       });
 
-      // Animated Git Commit Energy Pulses ("কমেন্ট রাস্তা দিয়ে বাসার ভেতরে ঢুকছে")
-      const pulseGeo = new THREE.SphereGeometry(0.2, 12, 12);
+      // Animated Git Commit Energy Pulses ("কমেন্ট ঢুকছে")
+      const pulseGeo = new THREE.SphereGeometry(0.22, 12, 12);
       const pulseMat = new THREE.MeshBasicMaterial({ color: parseInt(houseColorHex.replace('#', ''), 16) || 0x38bdf8 });
       const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
 
-      const nearestStreetZ = z < 0 ? z - 6 : z + 6;
-      const startPos = new THREE.Vector3(x, 0.3, nearestStreetZ);
+      const startPos = new THREE.Vector3(x, 0.3, z - 5);
       pulseMesh.position.copy(startPos);
       scene.add(pulseMesh);
 
@@ -596,53 +545,61 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       });
     });
 
-    // 🚗 8. Animated Cars Driving Along Grid Roads (North-South & East-West)
+    // 🦅 8. FLOCK OF 3D ANIMATED BIRDS FLYING IN OVERHEAD SKY
+    birdsRef.current = [];
+    for (let b = 0; b < 10; b++) {
+      const birdData = create3DBird();
+      const angle = (b / 10) * Math.PI * 2;
+      const radius = 25 + Math.random() * 15;
+      const altitude = 18 + Math.random() * 12;
+
+      birdData.group.position.set(Math.cos(angle) * radius, altitude, Math.sin(angle) * radius);
+      scene.add(birdData.group);
+
+      birdsRef.current.push({
+        group: birdData.group,
+        leftWing: birdData.leftWing,
+        rightWing: birdData.rightWing,
+        angle,
+        speed: 0.008 + Math.random() * 0.004,
+        radius,
+        altitude
+      });
+    }
+
+    // 🚗 9. ANIMATED CARS DRIVING ON GRID STREETS
     vehiclesRef.current = [];
     const carColors = ['38bdf8', 'ef4444', '10b981', 'f59e0b', 'a855f7', 'fdcb6e'];
 
-    gridCoords.forEach((coord, cIdx) => {
-      if (cIdx % 2 === 0) {
-        // East-West Car
-        const carMesh = createSuburbanCar(carColors[cIdx % carColors.length]);
-        carMesh.rotation.y = Math.PI / 2;
-        scene.add(carMesh);
-        vehiclesRef.current.push({
-          mesh: carMesh,
-          speed: 0.08 + Math.random() * 0.06,
-          direction: 'x',
-          pathCoord: coord,
-          currentPos: -24 + (cIdx * 8)
-        });
-      } else {
-        // North-South Car
-        const carMesh = createSuburbanCar(carColors[cIdx % carColors.length]);
-        scene.add(carMesh);
-        vehiclesRef.current.push({
-          mesh: carMesh,
-          speed: 0.08 + Math.random() * 0.06,
-          direction: 'z',
-          pathCoord: coord,
-          currentPos: -24 + (cIdx * 8)
-        });
-      }
+    gridZCoords.forEach((zCoord, cIdx) => {
+      const carMesh = createSuburbanCar(carColors[cIdx % carColors.length]);
+      carMesh.rotation.y = Math.PI / 2;
+      scene.add(carMesh);
+      vehiclesRef.current.push({
+        mesh: carMesh,
+        speed: 0.12 + Math.random() * 0.08,
+        direction: 'x',
+        pathCoord: zCoord,
+        currentPos: -36 + (cIdx * 8)
+      });
     });
 
-    // 🔍 9. FULL ZOOMING & TOUCH CONTROLS (Mouse Wheel Scroll-to-Zoom & Touch Pinch-to-Zoom)
+    // 🔍 10. MOUSE WHEEL & TOUCH PINCH ZOOM CONTROLS
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (!cameraRef.current) return;
-      const zoomDelta = e.deltaY * 0.04;
-      const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 2, 0));
-      const newRadius = Math.max(6, Math.min(85, currentRadius + zoomDelta));
+      const zoomDelta = e.deltaY * 0.05;
+      const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
+      const newRadius = Math.max(8, Math.min(110, currentRadius + zoomDelta));
 
-      const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 2, 0)).normalize();
-      cameraRef.current.position.copy(dir.multiplyScalar(newRadius).add(new THREE.Vector3(0, 2, 0)));
-      cameraRef.current.lookAt(0, 2, 0);
+      const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
+      cameraRef.current.position.copy(dir.multiplyScalar(newRadius).add(new THREE.Vector3(0, 4, 0)));
+      cameraRef.current.lookAt(0, 4, 0);
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
 
-    // Raycasting for Mouse Interaction
+    // Raycasting for Interaction
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -699,7 +656,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     container.addEventListener('pointerdown', handlePointerDown);
     container.addEventListener('pointermove', handlePointerMove);
 
-    // Orbit Dragging Logic & Touch Pinch Zoom
+    // Orbit Drag & Touch Pinch Zoom
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
     let cameraAngle = 0;
@@ -719,8 +676,8 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
       camera.position.x = Math.sin(cameraAngle) * currentRadius;
       camera.position.z = Math.cos(cameraAngle) * currentRadius;
-      camera.position.y = Math.max(4, Math.min(60, camera.position.y - deltaY * 0.1));
-      camera.lookAt(0, 2, 0);
+      camera.position.y = Math.max(5, Math.min(80, camera.position.y - deltaY * 0.12));
+      camera.lookAt(0, 4, 0);
 
       previousMousePosition = { x: e.clientX, y: e.clientY };
     };
@@ -750,8 +707,8 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
         camera.position.x = Math.sin(cameraAngle) * currentRadius;
         camera.position.z = Math.cos(cameraAngle) * currentRadius;
-        camera.position.y = Math.max(4, Math.min(60, camera.position.y - deltaY * 0.1));
-        camera.lookAt(0, 2, 0);
+        camera.position.y = Math.max(5, Math.min(80, camera.position.y - deltaY * 0.12));
+        camera.lookAt(0, 4, 0);
 
         previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       } else if (e.touches.length === 2 && cameraRef.current) {
@@ -761,12 +718,12 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         const deltaDist = initialPinchDistance - distance;
 
         const zoomFactor = deltaDist * 0.15;
-        const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 2, 0));
-        const newRadius = Math.max(6, Math.min(85, currentRadius + zoomFactor));
+        const currentRadius = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
+        const newRadius = Math.max(8, Math.min(110, currentRadius + zoomFactor));
 
-        const direction = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 2, 0)).normalize();
-        cameraRef.current.position.copy(direction.multiplyScalar(newRadius).add(new THREE.Vector3(0, 2, 0)));
-        cameraRef.current.lookAt(0, 2, 0);
+        const direction = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
+        cameraRef.current.position.copy(direction.multiplyScalar(newRadius).add(new THREE.Vector3(0, 4, 0)));
+        cameraRef.current.lookAt(0, 4, 0);
 
         initialPinchDistance = distance;
       }
@@ -783,32 +740,44 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     container.addEventListener('touchmove', handleTouchMove, { passive: true });
     container.addEventListener('touchend', handleTouchEnd);
 
-    // 10. Real-time Animation Loop
+    // 11. Real-time Animation Loop (Flapping Birds, Moving Cars, Commit Pulses)
     let animationFrameId: number;
+    let clock = new THREE.Clock();
+
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
 
       if (cityConfig.autoRotate && !isDragging) {
         cameraAngle += cityConfig.rotationSpeed;
         const currentRadius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
         camera.position.x = Math.sin(cameraAngle) * currentRadius;
         camera.position.z = Math.cos(cameraAngle) * currentRadius;
-        camera.lookAt(0, 2, 0);
+        camera.lookAt(0, 4, 0);
       }
 
-      // Animate Vehicles driving on East-West and North-South grid roads
-      vehiclesRef.current.forEach((v) => {
-        v.currentPos += v.speed;
-        if (v.currentPos > 24) v.currentPos = -24;
+      // Animate Flying Birds in Overhead Sky
+      birdsRef.current.forEach((b) => {
+        b.angle += b.speed;
+        b.group.position.x = Math.cos(b.angle) * b.radius;
+        b.group.position.z = Math.sin(b.angle) * b.radius;
+        b.group.position.y = b.altitude + Math.sin(elapsedTime * 2 + b.angle) * 1.5;
+        b.group.rotation.y = -b.angle + Math.PI / 2;
 
-        if (v.direction === 'x') {
-          v.mesh.position.set(v.currentPos, 0.05, v.pathCoord);
-        } else {
-          v.mesh.position.set(v.pathCoord, 0.05, v.currentPos);
-        }
+        // Flapping wings
+        const wingFlap = Math.sin(elapsedTime * 12 + b.angle) * 0.45;
+        b.leftWing.rotation.z = wingFlap;
+        b.rightWing.rotation.z = -wingFlap;
       });
 
-      // Animate Git Commit Energy Pulses flowing into house doors ("কমেন্ট ঢুকছে")
+      // Animate Vehicles driving along grid streets
+      vehiclesRef.current.forEach((v) => {
+        v.currentPos += v.speed;
+        if (v.currentPos > 38) v.currentPos = -38;
+        v.mesh.position.set(v.currentPos, 0.05, v.pathCoord);
+      });
+
+      // Animate Git Commit Energy Pulses ("কমেন্ট ঢুকছে")
       commitPulsesRef.current.forEach((cp) => {
         cp.progress += cp.speed;
         if (cp.progress > 1) cp.progress = 0;
@@ -865,27 +834,27 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     playSound('click');
     if (!cameraRef.current) return;
     if (preset === 'overview') {
-      cameraRef.current.position.set(34, 28, 40);
+      cameraRef.current.position.set(48, 38, 55);
     } else if (preset === 'street') {
-      cameraRef.current.position.set(16, 5, 20);
+      cameraRef.current.position.set(22, 6, 28);
     } else if (preset === 'drone') {
-      cameraRef.current.position.set(0, 52, 1);
+      cameraRef.current.position.set(0, 68, 1);
     }
-    cameraRef.current.lookAt(0, 2, 0);
+    cameraRef.current.lookAt(0, 4, 0);
   };
 
   const handleZoom = (delta: number) => {
     playSound('click');
     if (!cameraRef.current) return;
-    const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 2, 0)).normalize();
-    const currentDist = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 2, 0));
-    const newDist = Math.max(6, Math.min(85, currentDist + delta));
-    cameraRef.current.position.copy(dir.multiplyScalar(newDist).add(new THREE.Vector3(0, 2, 0)));
-    cameraRef.current.lookAt(0, 2, 0);
+    const dir = cameraRef.current.position.clone().sub(new THREE.Vector3(0, 4, 0)).normalize();
+    const currentDist = cameraRef.current.position.distanceTo(new THREE.Vector3(0, 4, 0));
+    const newDist = Math.max(8, Math.min(110, currentDist + delta));
+    cameraRef.current.position.copy(dir.multiplyScalar(newDist).add(new THREE.Vector3(0, 4, 0)));
+    cameraRef.current.lookAt(0, 4, 0);
   };
 
   return (
-    <div className="relative w-full h-full min-h-[520px] overflow-hidden rounded-2xl border border-sky-500/20 glass-panel shadow-2xl">
+    <div className="relative w-full h-full min-h-[550px] overflow-hidden rounded-2xl border border-sky-500/20 glass-panel shadow-2xl">
       {/* 3D WebGL Canvas Viewport */}
       <div ref={mountRef} className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing" />
 
@@ -899,7 +868,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>🌐</span> Neighborhood Overview
+          <span>🌐</span> Neighborhood Overview ({projects.length})
         </button>
         <button
           onClick={() => resetCamera('street')}
@@ -919,20 +888,20 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>🏠</span> Drone View
+          <span>🦅</span> Birds Drone View
         </button>
 
         {/* Zoom In & Out Buttons */}
         <div className="flex items-center gap-1 ml-1 pl-1 border-l border-slate-700">
           <button
-            onClick={() => handleZoom(-6)}
+            onClick={() => handleZoom(-8)}
             title="Zoom In (Scroll Mouse Wheel Up)"
             className="px-2 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700 text-xs font-mono-code font-bold"
           >
             🔍 + Zoom In
           </button>
           <button
-            onClick={() => handleZoom(6)}
+            onClick={() => handleZoom(8)}
             title="Zoom Out (Scroll Mouse Wheel Down)"
             className="px-2 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700 text-xs font-mono-code font-bold"
           >
@@ -945,16 +914,16 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       <div className="absolute bottom-3 left-3 z-10 p-2.5 rounded-xl glass-panel border border-slate-700/60 text-xs font-mono-code pointer-events-auto hidden sm:block">
         <div className="flex items-center gap-2 text-sky-400 font-bold mb-1">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          SUBURBAN 3D PROJECT NEIGHBORHOOD
+          ALL {projects.length} GITHUB PROJECTS SUBURBAN NEIGHBORHOOD
         </div>
         <p className="text-slate-400 text-[10px]">
-          • Grid Streets Surrounding Houses • Live Commit Motion Flow Into Front Doors
+          • All 48 Repositories Built as Multi-Story Buildings (Floors Scale by Commit Count)
         </p>
         <p className="text-slate-400 text-[10px]">
-          • Controls: Mouse Wheel Scroll / Touch Pinch to Zoom • Drag Mouse to Orbit Rotate
+          • Flying Birds in Sky, Animals on Lawns, Street Traffic & Live Commit Flow
         </p>
         <div className="mt-1.5 pt-1.5 border-t border-slate-800 flex items-center gap-2 text-slate-300 text-[11px]">
-          <span>Houses: <strong className="text-sky-300">{projects.length}</strong></span>
+          <span>Buildings: <strong className="text-sky-300">{projects.length} / 48 Active</strong></span>
           <span>Theme: <strong className="text-purple-400 capitalize">{cityConfig.theme}</strong></span>
         </div>
       </div>
