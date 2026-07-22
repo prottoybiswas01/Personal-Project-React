@@ -8,6 +8,7 @@ interface ProjectsSectionProps {
   onSelectProject: (project: Project) => void;
   onSyncGitHub: () => void;
   isSyncingGitHub?: boolean;
+  onOpenAllProjectsModal?: () => void;
 }
 
 export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
@@ -15,31 +16,54 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   onSelectProject,
   onSyncGitHub,
   isSyncingGitHub = false,
+  onOpenAllProjectsModal,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showAllGrid, setShowAllGrid] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // 1. Sort projects descending by commits count (most committed projects rank highest!)
   const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
 
-  // 2. Filter by category
-  const filteredProjects = selectedCategory === 'All'
-    ? sortedProjects
-    : sortedProjects.filter(p => p.category === selectedCategory);
+  // 2. Filter by category & search query
+  const filteredProjects = sortedProjects.filter(p => {
+    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+    const matchesQuery = !searchQuery.trim() || (
+      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.techStack.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+    return matchesCategory && matchesQuery;
+  });
 
   // 3. Grid display logic: Show top 6 or expand to show all projects!
   const displayedProjects = showAllGrid ? filteredProjects : filteredProjects.slice(0, 6);
 
   const categories = ['All', 'Full Stack', 'Frontend', 'Backend', 'UI/UX'];
 
+  const handleToggleViewAll = () => {
+    playSound('click');
+    const nextShowAll = !showAllGrid;
+    setShowAllGrid(nextShowAll);
+
+    // Scroll smoothly to the top of the Projects Section so user is immediately taken inside the full grid
+    setTimeout(() => {
+      const projElem = document.getElementById('projects');
+      if (projElem) {
+        projElem.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
+  };
+
   return (
-    <section id="projects" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <section id="projects" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-16">
       
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-4 mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-xs font-mono-code text-sky-400">
           <Trophy className="w-3.5 h-3.5 text-amber-400" />
-          <span>{showAllGrid ? `ALL ${projects.length} GITHUB REPOSITORIES` : 'TOP 6 MOST COMMITTED PROJECTS'}</span>
+          <span>{showAllGrid ? `ALL ${projects.length} GITHUB REPOSITORIES ACTIVE` : 'TOP 6 MOST COMMITTED PROJECTS'}</span>
         </div>
         
         <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-white">
@@ -62,27 +86,63 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
             <RefreshCw className={`w-4 h-4 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : 'text-sky-400'}`} />
             <span>{isSyncingGitHub ? 'SYNCING LIVE REPOS...' : 'REFRESH & SYNC GITHUB REPOSITORIES'}</span>
           </button>
+
+          {onOpenAllProjectsModal && (
+            <button
+              onClick={() => {
+                playSound('click');
+                onOpenAllProjectsModal();
+              }}
+              className="px-4 py-2 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-500/40 text-xs font-mono-code font-bold flex items-center gap-2 shadow-lg transition-all"
+            >
+              <Code className="w-4 h-4 text-purple-400" />
+              <span>OPEN DIRECTORY MODAL</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Category Filter Pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => {
-              playSound('click');
-              setSelectedCategory(cat);
-            }}
-            className={`px-4 py-2 rounded-xl text-xs font-mono-code transition-all border ${
-              selectedCategory === cat
-                ? 'bg-sky-500/20 text-sky-300 border-sky-400 glow-cyan font-bold'
-                : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+      {/* Category Filter Pills & Search */}
+      <div className="space-y-4 mb-10">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                playSound('click');
+                setSelectedCategory(cat);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-mono-code transition-all border ${
+                selectedCategory === cat
+                  ? 'bg-sky-500/20 text-sky-300 border-sky-400 glow-cyan font-bold'
+                  : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Live Search Bar when showing all or filtered */}
+        {showAllGrid && (
+          <div className="max-w-md mx-auto relative">
+            <input
+              type="text"
+              placeholder="Search projects by tech (e.g. React, Node, Tailwind)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 rounded-xl bg-slate-900/90 border border-sky-500/40 text-xs font-mono-code text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all text-center"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-mono-code"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Projects Grid */}
@@ -198,17 +258,26 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
       </div>
 
       {/* Expand/Collapse Toggle Button for All 48 Projects */}
-      <div className="mt-12 text-center">
+      <div className="mt-12 text-center flex flex-wrap items-center justify-center gap-4">
         <button
-          onClick={() => {
-            playSound('click');
-            setShowAllGrid(!showAllGrid);
-          }}
+          onClick={handleToggleViewAll}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-500/40 text-sky-300 font-mono-code text-xs font-bold transition-all shadow-lg glow-cyan"
         >
           <span>{showAllGrid ? 'SHOW TOP 6 PROJECTS ONLY' : `VIEW ALL ${projects.length} REPOSITORIES IN GRID`}</span>
           {showAllGrid ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
+
+        {onOpenAllProjectsModal && (
+          <button
+            onClick={() => {
+              playSound('click');
+              onOpenAllProjectsModal();
+            }}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-sky-500/20 to-purple-500/20 hover:from-sky-500/30 hover:to-purple-500/30 border border-sky-400/50 text-sky-300 font-mono-code text-xs font-bold transition-all shadow-lg"
+          >
+            <span>FULL DIRECTORY MODAL ({projects.length})</span>
+          </button>
+        )}
       </div>
 
     </section>
