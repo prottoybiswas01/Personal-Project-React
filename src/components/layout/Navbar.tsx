@@ -37,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-slate-950/90 border-b border-sky-500/20 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
         
         {/* Brand Logo */}
         <div 
@@ -45,30 +45,30 @@ export const Navbar: React.FC<NavbarProps> = ({
             playSound('click');
             onNavigate('hero');
           }}
-          className="flex items-center gap-2.5 cursor-pointer group shrink-0"
+          className="flex items-center gap-2 cursor-pointer group shrink-0"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-purple-600 p-0.5 glow-cyan transition-transform group-hover:scale-105">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center text-sky-400">
-              <Box className="w-5 h-5 animate-pulse" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 via-indigo-500 to-purple-600 p-0.5 glow-cyan transition-transform group-hover:scale-105">
+            <div className="w-full h-full bg-slate-950 rounded-[6px] flex items-center justify-center text-sky-400">
+              <Box className="w-4 h-4 animate-pulse" />
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-heading font-black text-base sm:text-lg text-white tracking-wide">
+            <div className="flex items-center gap-1.5">
+              <span className="font-heading font-black text-sm sm:text-base text-white tracking-wide">
                 PROTTOY BISWAS
               </span>
-              <span className="px-1.5 py-0.5 text-[9px] font-mono-code rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className="px-1.5 py-0.2 text-[8px] font-mono-code rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 3D CITY
               </span>
             </div>
-            <span className="text-[10px] sm:text-[11px] font-mono-code text-slate-400 block -mt-0.5 truncate max-w-[200px] sm:max-w-none">
+            <span className="text-[10px] font-mono-code text-slate-400 block -mt-0.5 truncate max-w-[170px] sm:max-w-none">
               MERN Stack Developer & UI/UX Designer
             </span>
           </div>
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1 glass-panel px-3 py-1.5 rounded-2xl border border-slate-800">
+        <nav className="hidden lg:flex items-center gap-0.5 glass-panel px-2.5 py-1 rounded-xl border border-slate-800">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -76,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playSound('click');
                 onNavigate(item.id);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono-code transition-all flex items-center gap-1.5 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-mono-code transition-all flex items-center gap-1 ${
                 activeSection === item.id
                   ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 glow-cyan font-bold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
@@ -89,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Header Controls */}
-        <div className="hidden sm:flex items-center gap-2 shrink-0">
+        <div className="hidden sm:flex items-center gap-1.5 shrink-0">
           
           {/* Live GitHub Auto-Sync Button */}
           <button
@@ -99,23 +99,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             disabled={isSyncingGitHub}
             title="Live Sync with GitHub account (prottoybiswas01)"
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 border border-sky-500/30 text-xs font-mono-code font-semibold flex items-center gap-1.5 transition-all shadow"
+            className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-sky-400 border border-sky-500/30 text-[11px] font-mono-code font-semibold flex items-center gap-1.5 transition-all shadow"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
-            <span className="hidden md:inline">{isSyncingGitHub ? 'SYNCING GITHUB...' : 'LIVE GITHUB SYNC'}</span>
+            <span className="hidden md:inline">{isSyncingGitHub ? 'SYNCING...' : 'LIVE GITHUB SYNC'}</span>
           </button>
 
           {/* Audio Synthesizer Toggle */}
           <button
             onClick={handleMuteToggle}
             title={muted ? 'Unmute Audio Sound FX' : 'Mute Audio Sound FX'}
-            className={`p-2.5 rounded-xl border transition-all ${
+            className={`p-2 rounded-lg border transition-all ${
               muted 
                 ? 'bg-slate-900 text-slate-500 border-slate-800' 
                 : 'bg-sky-500/20 text-sky-300 border-sky-500/40 glow-cyan'
             }`}
           >
-            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 animate-pulse" />}
+            {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 animate-pulse" />}
           </button>
 
           {/* Admin Panel Launch Button */}
@@ -124,9 +124,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               playSound('admin');
               onOpenAdmin();
             }}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-500 hover:from-purple-500 hover:to-sky-400 text-white font-mono-code text-xs font-bold flex items-center gap-1.5 shadow-lg glow-purple transition-all border border-purple-400/30"
+            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-500 hover:from-purple-500 hover:to-sky-400 text-white font-mono-code text-[11px] font-bold flex items-center gap-1.5 shadow-lg glow-purple transition-all border border-purple-400/30"
           >
-            <Shield className="w-4 h-4 text-sky-300" />
+            <Shield className="w-3.5 h-3.5 text-sky-300" />
             <span>ADMIN (/admin)</span>
           </button>
         </div>
@@ -139,22 +139,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               onSyncGitHub();
             }}
             disabled={isSyncingGitHub}
-            className="p-2 rounded-lg bg-slate-900 text-sky-400 border border-slate-800"
+            className="p-1.5 rounded-lg bg-slate-900 text-sky-400 border border-slate-800"
             title="Live Sync GitHub"
           >
-            <RefreshCw className={`w-4 h-4 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
           </button>
           <button
             onClick={handleMuteToggle}
-            className="p-2 rounded-lg bg-slate-900 text-slate-300 border border-slate-800"
+            className="p-1.5 rounded-lg bg-slate-900 text-slate-300 border border-slate-800"
           >
-            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-slate-900 text-slate-300 border border-slate-800"
+            className="p-1.5 rounded-lg bg-slate-900 text-slate-300 border border-slate-800"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
 
@@ -162,7 +162,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
-        <div className="lg:hidden glass-panel border-t border-slate-800 p-4 space-y-2 animate-fadeIn">
+        <div className="lg:hidden glass-panel border-t border-slate-800 p-3 space-y-1.5 animate-fadeIn">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -171,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onNavigate(item.id);
                 setMobileMenuOpen(false);
               }}
-              className={`w-full px-4 py-2.5 rounded-xl text-xs font-mono-code text-left flex items-center gap-2 ${
+              className={`w-full px-3 py-2 rounded-lg text-xs font-mono-code text-left flex items-center gap-2 ${
                 activeSection === item.id
                   ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40'
                   : 'text-slate-300 hover:bg-slate-900'
@@ -182,7 +182,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           ))}
 
-          <div className="pt-2 border-t border-slate-800 space-y-2">
+          <div className="pt-2 border-t border-slate-800 space-y-1.5">
             <button
               onClick={() => {
                 playSound('click');
@@ -190,9 +190,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setMobileMenuOpen(false);
               }}
               disabled={isSyncingGitHub}
-              className="w-full py-2.5 rounded-xl bg-slate-900 text-sky-400 border border-sky-500/30 font-mono-code text-xs font-bold flex items-center justify-center gap-2"
+              className="w-full py-2 rounded-lg bg-slate-900 text-sky-400 border border-sky-500/30 font-mono-code text-xs font-bold flex items-center justify-center gap-2"
             >
-              <RefreshCw className={`w-4 h-4 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
               <span>LIVE GITHUB SYNC (prottoybiswas01)</span>
             </button>
 
@@ -202,9 +202,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onOpenAdmin();
                 setMobileMenuOpen(false);
               }}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-sky-500 text-white font-mono-code text-xs font-bold flex items-center justify-center gap-2"
+              className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-600 to-sky-500 text-white font-mono-code text-xs font-bold flex items-center justify-center gap-2"
             >
-              <Shield className="w-4 h-4" />
+              <Shield className="w-3.5 h-3.5" />
               <span>ACCESS ADMIN PANEL (/admin)</span>
             </button>
           </div>

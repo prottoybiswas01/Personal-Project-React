@@ -47,12 +47,12 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     const currentTheme = themeColors[cityConfig.theme] || themeColors.cyberpunk;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(currentTheme.sky);
-    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.015);
+    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.012);
     sceneRef.current = scene;
 
     // 2. Camera setup
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(22, 18, 28);
+    camera.position.set(28, 22, 34);
     camera.lookAt(0, 3, 0);
     cameraRef.current = camera;
 
@@ -67,27 +67,27 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     rendererRef.current = renderer;
 
     // 4. Ambient & Directional Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(currentTheme.light1, 1.2);
-    dirLight.position.set(20, 30, 15);
+    const dirLight = new THREE.DirectionalLight(currentTheme.light1, 1.4);
+    dirLight.position.set(30, 40, 20);
     dirLight.castShadow = true;
     scene.add(dirLight);
 
-    const pointLight = new THREE.PointLight(currentTheme.light2, 2, 40);
-    pointLight.position.set(-10, 15, -10);
+    const pointLight = new THREE.PointLight(currentTheme.light2, 2.5, 60);
+    pointLight.position.set(-15, 20, -15);
     scene.add(pointLight);
 
     // 5. Grid Floor
     if (cityConfig.showGrid) {
-      const gridHelper = new THREE.GridHelper(60, 40, currentTheme.grid, 0x1e293b);
+      const gridHelper = new THREE.GridHelper(80, 50, currentTheme.grid, 0x1e293b);
       gridHelper.position.y = 0;
       scene.add(gridHelper);
     }
 
     // Ground platform disc
-    const groundGeo = new THREE.CylinderGeometry(25, 27, 0.4, 32);
+    const groundGeo = new THREE.CylinderGeometry(35, 37, 0.4, 32);
     const groundMat = new THREE.MeshStandardMaterial({
       color: 0x0f172a,
       roughness: 0.3,
@@ -100,13 +100,13 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     // 6. Particle Starfield
     if (cityConfig.showParticles) {
-      const particleCount = 400;
+      const particleCount = 500;
       const geometry = new THREE.BufferGeometry();
       const positions = new Float32Array(particleCount * 3);
       for (let i = 0; i < particleCount * 3; i += 3) {
-        positions[i] = (Math.random() - 0.5) * 80;
-        positions[i + 1] = Math.random() * 40;
-        positions[i + 2] = (Math.random() - 0.5) * 80;
+        positions[i] = (Math.random() - 0.5) * 100;
+        positions[i + 1] = Math.random() * 50;
+        positions[i + 2] = (Math.random() - 0.5) * 100;
       }
       geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       const material = new THREE.PointsMaterial({
@@ -120,15 +120,18 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       particlesRef.current = particles;
     }
 
-    // 7. Render 3D Buildings for Projects
+    // 7. Render 3D Buildings in Compact Concentric City Rings
     buildingMeshesRef.current = [];
-    const count = projects.length;
-    const radius = Math.max(8, count * 2.2);
 
     projects.forEach((proj, idx) => {
-      const angle = (idx / count) * Math.PI * 2;
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius;
+      // Concentric city rings: 8 buildings per ring
+      const ringIndex = Math.floor(idx / 8);
+      const posInRing = idx % 8;
+      const ringRadius = 5 + ringIndex * 4.2;
+      const angle = (posInRing / 8) * Math.PI * 2 + (ringIndex * 0.4);
+
+      const x = Math.cos(angle) * ringRadius;
+      const z = Math.sin(angle) * ringRadius;
 
       const buildingGroup = new THREE.Group();
       buildingGroup.position.set(x, 0, z);
@@ -140,7 +143,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const buildingColorHex = proj.buildingColor || '#38bdf8';
 
       // Base Pedestal
-      const baseGeo = new THREE.BoxGeometry(3, 0.4, 3);
+      const baseGeo = new THREE.BoxGeometry(2.4, 0.4, 2.4);
       const baseMat = new THREE.MeshStandardMaterial({
         color: 0x1e293b,
         metalness: 0.9,
@@ -154,16 +157,15 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
       // Stacked Floors
       for (let f = 0; f < floors; f++) {
-        const width = 2.4 - f * 0.04;
-        const depth = 2.4 - f * 0.04;
+        const width = 2.0 - f * 0.03;
+        const depth = 2.0 - f * 0.03;
         const floorGeo = new THREE.BoxGeometry(width, floorHeight * 0.85, depth);
         
-        // Window texture accent
         const isTop = f === floors - 1;
         const floorMat = new THREE.MeshStandardMaterial({
           color: isTop ? buildingColorHex : 0x0f172a,
           emissive: isTop ? buildingColorHex : (f % 2 === 0 ? buildingColorHex : 0x000000),
-          emissiveIntensity: isTop ? 0.6 : 0.25,
+          emissiveIntensity: isTop ? 0.7 : 0.3,
           roughness: 0.2,
           metalness: 0.7,
         });
@@ -176,17 +178,17 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       }
 
       // Spire Light on top floor
-      const spireGeo = new THREE.CylinderGeometry(0.05, 0.15, 1.2, 8);
+      const spireGeo = new THREE.CylinderGeometry(0.05, 0.15, 1.0, 8);
       const spireMat = new THREE.MeshBasicMaterial({ color: buildingColorHex });
       const spireMesh = new THREE.Mesh(spireGeo, spireMat);
-      spireMesh.position.y = 0.4 + totalHeight + 0.6;
+      spireMesh.position.y = 0.4 + totalHeight + 0.5;
       buildingGroup.add(spireMesh);
 
       // Pulsing Beacon Light
-      const beaconGeo = new THREE.SphereGeometry(0.2, 8, 8);
+      const beaconGeo = new THREE.SphereGeometry(0.18, 8, 8);
       const beaconMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
-      beaconMesh.position.y = 0.4 + totalHeight + 1.2;
+      beaconMesh.position.y = 0.4 + totalHeight + 1.0;
       buildingGroup.add(beaconMesh);
 
       scene.add(buildingGroup);
@@ -296,7 +298,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
       if (cityConfig.autoRotate && !isDragging) {
         cameraAngle += cityConfig.rotationSpeed;
-        const currentRadius = 32;
+        const currentRadius = 35;
         camera.position.x = Math.sin(cameraAngle) * currentRadius;
         camera.position.z = Math.cos(cameraAngle) * currentRadius;
         camera.lookAt(0, 4, 0);
@@ -311,7 +313,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       buildingMeshesRef.current.forEach((item) => {
         const isHovered = item.id === hoveredProjectId;
         if (isHovered) {
-          item.mesh.scale.set(1.08, 1.08, 1.08);
+          item.mesh.scale.set(1.1, 1.1, 1.1);
         } else {
           item.mesh.scale.set(1, 1, 1);
         }
@@ -353,67 +355,67 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     playSound('click');
     if (!cameraRef.current) return;
     if (preset === 'overview') {
-      cameraRef.current.position.set(22, 18, 28);
+      cameraRef.current.position.set(28, 22, 34);
     } else if (preset === 'hero') {
-      cameraRef.current.position.set(10, 8, 14);
+      cameraRef.current.position.set(12, 10, 16);
     } else if (preset === 'wireframe') {
-      cameraRef.current.position.set(0, 35, 1);
+      cameraRef.current.position.set(0, 45, 1);
     }
     cameraRef.current.lookAt(0, 3, 0);
   };
 
   return (
-    <div className="relative w-full h-full min-h-[550px] overflow-hidden rounded-2xl border border-sky-500/20 glass-panel shadow-2xl">
+    <div className="relative w-full h-full min-h-[500px] overflow-hidden rounded-2xl border border-sky-500/20 glass-panel shadow-2xl">
       {/* 3D WebGL Canvas Viewport */}
       <div ref={mountRef} className="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing" />
 
-      {/* Floating 3D City HUD Overlay Controls */}
-      <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2 pointer-events-auto">
+      {/* Floating 3D City HUD Camera Controls */}
+      <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5 pointer-events-auto">
         <button
           onClick={() => resetCamera('overview')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono-code flex items-center gap-1.5 transition-all border ${
+          className={`px-2.5 py-1 rounded-lg text-xs font-mono-code flex items-center gap-1 transition-all border ${
             activeCamPreset === 'overview'
               ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan'
-              : 'bg-slate-900/80 text-slate-400 border-slate-700 hover:text-white'
+              : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>🌐</span> City Overview
+          <span>🌐</span> Overview
         </button>
         <button
           onClick={() => resetCamera('hero')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono-code flex items-center gap-1.5 transition-all border ${
+          className={`px-2.5 py-1 rounded-lg text-xs font-mono-code flex items-center gap-1 transition-all border ${
             activeCamPreset === 'hero'
               ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan'
-              : 'bg-slate-900/80 text-slate-400 border-slate-700 hover:text-white'
+              : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>🎯</span> Low Angle Hero
+          <span>🎯</span> Low Angle
         </button>
         <button
           onClick={() => resetCamera('wireframe')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono-code flex items-center gap-1.5 transition-all border ${
+          className={`px-2.5 py-1 rounded-lg text-xs font-mono-code flex items-center gap-1 transition-all border ${
             activeCamPreset === 'wireframe'
               ? 'bg-sky-500/30 text-sky-300 border-sky-400 glow-cyan'
-              : 'bg-slate-900/80 text-slate-400 border-slate-700 hover:text-white'
+              : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>📡</span> Satellite Top-Down
+          <span>📡</span> Satellite
         </button>
       </div>
 
       {/* 3D City Legend & Stats Badge */}
-      <div className="absolute bottom-4 left-4 z-10 p-3 rounded-xl glass-panel border border-slate-700/60 text-xs font-mono-code pointer-events-auto hidden md:block">
+      <div className="absolute bottom-3 left-3 z-10 p-2.5 rounded-xl glass-panel border border-slate-700/60 text-xs font-mono-code pointer-events-auto hidden sm:block">
         <div className="flex items-center gap-2 text-sky-400 font-bold mb-1">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           3D GITHUB CITY ACTIVE
         </div>
-        <p className="text-slate-400 text-[11px]">
+        <p className="text-slate-400 text-[10px]">
           • Rotate: Click + Drag mouse
         </p>
-        <p className="text-slate-400 text-[11px]">
+        <p className="text-slate-400 text-[10px]">
           • Inspect: Click any 3D Building
         </p>
-        <div className="mt-2 pt-2 border-t border-slate-800 flex items-center gap-3 text-slate-300">
+        <div className="mt-1.5 pt-1.5 border-t border-slate-800 flex items-center gap-2 text-slate-300 text-[11px]">
           <span>Buildings: <strong className="text-sky-300">{projects.length}</strong></span>
           <span>Theme: <strong className="text-purple-400 capitalize">{cityConfig.theme}</strong></span>
         </div>
