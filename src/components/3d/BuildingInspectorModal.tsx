@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Project } from '../../types/portfolio';
-import { X, ExternalLink, GitCommit, Layers, Sparkles, Plus, Terminal } from 'lucide-react';
+import { X, ExternalLink, GitCommit, Layers, Sparkles, Plus, Terminal, Link } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playSound } from '../../utils/storage';
 
@@ -8,15 +8,19 @@ interface BuildingInspectorModalProps {
   project: Project | null;
   onClose: () => void;
   onAddCommit: (projectId: string, message: string) => void;
+  onUpdateLiveUrl?: (projectId: string, liveUrl: string) => void;
 }
 
 export const BuildingInspectorModal: React.FC<BuildingInspectorModalProps> = ({
   project,
   onClose,
   onAddCommit,
+  onUpdateLiveUrl,
 }) => {
   const [commitMessage, setCommitMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditingUrl, setIsEditingUrl] = useState(false);
+  const [inputUrl, setInputUrl] = useState(project?.liveUrl || '');
 
   if (!project) return null;
 
@@ -40,6 +44,15 @@ export const BuildingInspectorModal: React.FC<BuildingInspectorModalProps> = ({
       setCommitMessage('');
       setIsSubmitting(false);
     }, 400);
+  };
+
+  const handleSaveLiveUrl = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onUpdateLiveUrl) {
+      playSound('click');
+      onUpdateLiveUrl(project.id, inputUrl.trim());
+      setIsEditingUrl(false);
+    }
   };
 
   const floors = Math.max(3, Math.floor(project.commitsCount / 2));
@@ -141,6 +154,47 @@ export const BuildingInspectorModal: React.FC<BuildingInspectorModalProps> = ({
             ))}
           </div>
         </div>
+
+        {/* Quick Edit Live URL Drawer */}
+        {isEditingUrl ? (
+          <form onSubmit={handleSaveLiveUrl} className="mt-4 p-3 rounded-xl bg-slate-900 border border-sky-500/40 space-y-2 font-mono-code">
+            <label className="block text-xs text-sky-300">Enter / Paste Live Demo URL:</label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                required
+                value={inputUrl}
+                onChange={(e) => setInputUrl(e.target.value)}
+                placeholder="https://my-app.vercel.app"
+                className="flex-1 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white"
+              />
+              <button
+                type="submit"
+                className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditingUrl(false)}
+                className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 text-xs"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="mt-4 flex items-center justify-between text-xs font-mono-code bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+            <span className="text-slate-400">Live URL: {project.liveUrl || 'Not set yet'}</span>
+            <button
+              onClick={() => setIsEditingUrl(true)}
+              className="text-sky-400 hover:text-sky-300 flex items-center gap-1 underline"
+            >
+              <Link className="w-3 h-3" />
+              <span>{project.liveUrl ? 'Edit URL' : 'Set Live URL'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Interactive Push Commit Simulator */}
         <div className="mt-6 p-4 rounded-xl bg-slate-900/80 border border-sky-500/30">

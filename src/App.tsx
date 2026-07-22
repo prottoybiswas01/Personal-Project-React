@@ -45,7 +45,7 @@ export function App() {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState<boolean>(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
 
-  // Fetch initial state from MongoDB Atlas API
+  // Fetch initial state & run initial GitHub Auto Sync
   useEffect(() => {
     async function loadData() {
       const { data, isMongoConnected: connected } = await fetchPortfolioData();
@@ -53,8 +53,24 @@ export function App() {
         setPortfolioData(data);
         setIsMongoConnected(true);
       }
+
+      // Perform background GitHub auto-sync on load
+      const res = await syncGitHubRepositoriesWithDB();
+      if (res.success && res.projects) {
+        setPortfolioData(prev => ({ ...prev, projects: res.projects! }));
+      }
     }
     loadData();
+
+    // Automatic polling interval (every 2 minutes) for continuous GitHub auto-sync
+    const interval = setInterval(async () => {
+      const res = await syncGitHubRepositoriesWithDB();
+      if (res.success && res.projects) {
+        setPortfolioData(prev => ({ ...prev, projects: res.projects! }));
+      }
+    }, 120000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Check URL pathname for /admin or #admin
@@ -154,6 +170,25 @@ export function App() {
     }
   };
 
+  // Update Live URL for a project from Inspector modal
+  const handleUpdateLiveUrl = async (projectId: string, liveUrl: string) => {
+    const updatedProjects = portfolioData.projects.map((p) => {
+      if (p.id === projectId) {
+        return { ...p, liveUrl };
+      }
+      return p;
+    });
+
+    const updatedData = { ...portfolioData, projects: updatedProjects };
+    updatePortfolioData(updatedData);
+
+    const target = updatedProjects.find((p) => p.id === projectId);
+    if (target) {
+      setSelectedProject(target);
+      await saveProjectToDB(target, false);
+    }
+  };
+
   // Contact Form Message Transmission Handler
   const handleSendMessage = async (msgData: Omit<ContactMessage, 'id' | 'date' | 'read'>) => {
     const newMsg: ContactMessage = {
@@ -204,7 +239,7 @@ export function App() {
           ) : (
             <>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>MongoDB Atlas Connected • Live Persistence Active (Cluster0)</span>
+              <span>MongoDB Atlas Connected • Real-Time GitHub Auto Sync Active</span>
             </>
           )}
         </div>
@@ -271,6 +306,7 @@ export function App() {
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
         onAddCommit={handleAddCommit}
+        onUpdateLiveUrl={handleUpdateLiveUrl}
       />
 
       {/* Admin Auth Login Modal */}

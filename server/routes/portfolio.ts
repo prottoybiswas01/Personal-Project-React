@@ -13,21 +13,33 @@ import { initialPortfolioData } from '../../src/data/initialData';
 
 const router = Router();
 
-// Helper to color code building based on language
-function getBuildingColor(language?: string | null): string {
+// Helper to color code building based on language / topics
+function getBuildingColor(language?: string | null, topics?: string[]): string {
+  if (topics && topics.includes('react')) return '#38bdf8';
+  if (topics && topics.includes('nodejs')) return '#10b981';
+  if (topics && topics.includes('fullstack')) return '#a855f7';
   if (!language) return '#38bdf8';
+
   const lang = language.toLowerCase();
-  if (lang.includes('script') || lang.includes('js') || lang.includes('ts')) return '#38bdf8';
-  if (lang.includes('react') || lang.includes('html') || lang.includes('css')) return '#a855f7';
+  if (lang.includes('typescript') || lang.includes('javascript') || lang.includes('js')) return '#38bdf8';
+  if (lang.includes('html') || lang.includes('css')) return '#a855f7';
   if (lang.includes('node') || lang.includes('python')) return '#10b981';
   if (lang.includes('ui') || lang.includes('figma')) return '#f59e0b';
   return '#ec4899';
 }
 
-// Live GitHub Sync Handler Function
+// Format repository name cleanly
+function formatRepoTitle(name: string): string {
+  return name
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+// Enhanced Live GitHub Auto Sync Engine
 export async function syncGitHubRepositories(username: string = 'prottoybiswas01') {
   try {
-    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=30`, {
+    console.log(`📡 Fetching live public repositories for GitHub user: ${username}`);
+    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, {
       headers: {
         'User-Agent': 'Prottoy-Portfolio-3D-App'
       }
@@ -43,29 +55,53 @@ export async function syncGitHubRepositories(username: string = 'prottoybiswas01
     const syncedProjects = [];
 
     for (const repo of repos) {
+      // 1. Try to fetch portfolio.json metadata file from repo if user created one
+      let repoMeta: any = {};
+      try {
+        const metaRes = await fetch(`https://raw.githubusercontent.com/${username}/${repo.name}/main/portfolio.json`);
+        if (metaRes.ok) {
+          repoMeta = await metaRes.json();
+        }
+      } catch {
+        // No custom portfolio.json, fallback to intelligent GitHub defaults
+      }
+
+      // Preserve existing manual liveUrl or buildingColor if user edited it in MongoDB
+      const existingInDB = await ProjectModel.findOne({ id: `gh-${repo.id}` }).lean();
+
       // Estimate commits count from repository size / updates
-      const estimatedCommits = Math.max(8, Math.min(60, Math.floor(repo.size / 100) + 12));
-      const techStack = [repo.language || 'JavaScript', 'Git', 'GitHub'];
-      if (repo.name.toLowerCase().includes('react')) techStack.unshift('React');
-      if (repo.name.toLowerCase().includes('node') || repo.name.toLowerCase().includes('express')) techStack.unshift('Node.js');
+      const estimatedCommits = repoMeta.commitsCount || Math.max(10, Math.min(80, Math.floor(repo.size / 80) + 15));
+
+      // Build tech stack list from GitHub topics & language
+      const techStack: string[] = repoMeta.techStack || [];
+      if (techStack.length === 0) {
+        if (repo.language) techStack.push(repo.language);
+        if (Array.isArray(repo.topics)) {
+          repo.topics.forEach((t: string) => {
+            if (!techStack.includes(t)) techStack.push(t);
+          });
+        }
+        if (!techStack.includes('Git')) techStack.push('Git');
+        if (!techStack.includes('GitHub')) techStack.push('GitHub');
+      }
 
       const projData = {
         id: `gh-${repo.id}`,
-        title: repo.name.replace(/-/g, ' ').replace(/_/g, ' '),
-        subtitle: `Live GitHub Repository (${repo.language || 'Web'})`,
-        description: repo.description || `Public GitHub repository ${repo.full_name}. Updated on ${new Date(repo.updated_at).toLocaleDateString()}.`,
-        category: (repo.language === 'TypeScript' || repo.language === 'JavaScript' ? 'Full Stack' : 'Frontend') as any,
+        title: repoMeta.title || formatRepoTitle(repo.name),
+        subtitle: repoMeta.subtitle || `GitHub Repository (${repo.language || 'Web'})`,
+        description: repoMeta.description || repo.description || `Public GitHub repository ${repo.full_name}. Updated on ${new Date(repo.updated_at).toLocaleDateString()}.`,
+        category: (repoMeta.category || (repo.language === 'TypeScript' || repo.language === 'JavaScript' ? 'Full Stack' : 'Frontend')) as any,
         techStack,
         githubUrl: repo.html_url,
-        liveUrl: repo.homepage || repo.html_url,
-        imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+        liveUrl: existingInDB?.liveUrl || repoMeta.liveUrl || repo.homepage || '',
+        imageUrl: repoMeta.imageUrl || existingInDB?.imageUrl || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
         commitsCount: estimatedCommits,
-        buildingColor: getBuildingColor(repo.language),
-        featured: repo.stargazers_count > 0 || repo.name.toLowerCase().includes('react'),
+        buildingColor: repoMeta.buildingColor || existingInDB?.buildingColor || getBuildingColor(repo.language, repo.topics),
+        featured: repoMeta.featured ?? (repo.stargazers_count > 0 || repo.name.toLowerCase().includes('react')),
         createdAt: repo.created_at ? repo.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
       };
 
-      // Upsert into MongoDB
+      // Upsert into MongoDB Atlas
       const updated = await ProjectModel.findOneAndUpdate(
         { id: projData.id },
         projData,
@@ -74,6 +110,7 @@ export async function syncGitHubRepositories(username: string = 'prottoybiswas01
       syncedProjects.push(updated);
     }
 
+    console.log(`✅ Synced ${syncedProjects.length} GitHub repositories with MongoDB Atlas!`);
     return syncedProjects;
   } catch (err) {
     console.error('Failed to sync live GitHub repositories:', err);
@@ -88,11 +125,30 @@ router.get('/github/sync', async (_req, res) => {
     const allProjects = await ProjectModel.find().sort({ createdAt: -1 }).lean();
     res.json({
       success: true,
-      message: `Successfully synced ${repos.length} live repositories from github.com/prottoybiswas01`,
+      message: `Successfully auto-synced ${repos.length} GitHub repositories with MongoDB Atlas!`,
       projects: allProjects
     });
   } catch {
     res.status(500).json({ error: 'Failed to sync with GitHub API' });
+  }
+});
+
+// POST /api/github/webhook -> Real-time GitHub Webhook Event Listener
+router.post('/github/webhook', async (req, res) => {
+  try {
+    const event = req.headers['x-github-event'];
+    console.log(`🔔 Received GitHub Webhook Notification: Event=${event}`);
+    
+    // Automatically trigger live sync when new code is pushed or a repo is created!
+    const repos = await syncGitHubRepositories();
+    res.json({
+      success: true,
+      message: `GitHub webhook processed event '${event}'. Synced ${repos.length} repositories.`,
+      event
+    });
+  } catch (err) {
+    console.error('Error processing GitHub webhook:', err);
+    res.status(500).json({ error: 'Failed to process webhook' });
   }
 });
 
