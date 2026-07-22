@@ -11,7 +11,7 @@ interface CityCanvasProps {
   onHoverProject?: (projectId: string | null) => void;
 }
 
-// Canvas Texture Generator for Floating 3D Building Text Labels
+// Canvas Texture Generator for Floating 3D Building Text Banners
 function createTextLabelTexture(text: string, status: string, colorHex: string): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
@@ -20,7 +20,7 @@ function createTextLabelTexture(text: string, status: string, colorHex: string):
 
   if (ctx) {
     // Glassmorphic Label Background
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    ctx.fillStyle = 'rgba(9, 13, 22, 0.92)';
     ctx.beginPath();
     ctx.roundRect(10, 10, 492, 108, 16);
     ctx.fill();
@@ -47,57 +47,7 @@ function createTextLabelTexture(text: string, status: string, colorHex: string):
   return texture;
 }
 
-// 3D Construction Crane Generator
-function createConstructionCrane(): THREE.Group {
-  const craneGroup = new THREE.Group();
-
-  // Vertical Mast (Steel Truss)
-  const mastGeo = new THREE.BoxGeometry(0.3, 8, 0.3);
-  const mastMat = new THREE.MeshStandardMaterial({
-    color: 0xf59e0b, // Construction Yellow
-    metalness: 0.8,
-    roughness: 0.3,
-  });
-  const mastMesh = new THREE.Mesh(mastGeo, mastMat);
-  mastMesh.position.y = 4;
-  craneGroup.add(mastMesh);
-
-  // Rotating Jib Arm
-  const jibArmGroup = new THREE.Group();
-  jibArmGroup.position.y = 7.8;
-
-  // Main Boom Arm
-  const boomGeo = new THREE.BoxGeometry(6, 0.25, 0.25);
-  const boomMesh = new THREE.Mesh(boomGeo, mastMat);
-  boomMesh.position.x = 2;
-  jibArmGroup.add(boomMesh);
-
-  // Counterweight
-  const counterWeightGeo = new THREE.BoxGeometry(1.2, 0.6, 0.6);
-  const counterWeightMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
-  const counterWeightMesh = new THREE.Mesh(counterWeightGeo, counterWeightMat);
-  counterWeightMesh.position.x = -1.8;
-  jibArmGroup.add(counterWeightMesh);
-
-  // Cable & Hook
-  const cableGeo = new THREE.CylinderGeometry(0.02, 0.02, 3, 6);
-  const cableMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
-  const cableMesh = new THREE.Mesh(cableGeo, cableMat);
-  cableMesh.position.set(3.5, -1.5, 0);
-  jibArmGroup.add(cableMesh);
-
-  // Hazard Light on Crane Top
-  const lightGeo = new THREE.SphereGeometry(0.15, 8, 8);
-  const lightMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
-  const lightMesh = new THREE.Mesh(lightGeo, lightMat);
-  lightMesh.position.y = 0.5;
-  jibArmGroup.add(lightMesh);
-
-  craneGroup.add(jibArmGroup);
-  return craneGroup;
-}
-
-// 3D Moving Vehicle Generator
+// 3D Moving Vehicle Generator for Living City Highway
 function createVehicle(colorHex: string): THREE.Group {
   const vehicleGroup = new THREE.Group();
 
@@ -144,98 +94,106 @@ function createVehicle(colorHex: string): THREE.Group {
   return vehicleGroup;
 }
 
-// 🏛️ REALISTIC ARCHITECTURAL 3D SKYSCRAPER BUILDER
-function createArchitecturalBuilding(proj: Project, idx: number): THREE.Group {
+// 🏙️ ICONIC 3D REAL-WORLD LANDMARK SKYSCRAPER BUILDER
+// (Burj Khalifa Spire, Google Tech HQ, Cyber Spire, Stepped Art Deco, Crystal Prism)
+function createIconicSkyscraper(proj: Project, idx: number): THREE.Group {
   const buildingGroup = new THREE.Group();
 
-  const floors = Math.max(3, Math.min(26, Math.floor(proj.commitsCount / 2)));
+  const floors = Math.max(4, Math.min(28, Math.floor(proj.commitsCount / 2)));
   const floorHeight = 0.65;
   const totalHeight = floors * floorHeight;
 
   // Curated Architectural Color Palettes
   const palettes = [
-    { glass: 0x38bdf8, frame: 0x1e293b, accent: 0x0284c7 }, // Sapphire Glass & Slate
-    { glass: 0xa855f7, frame: 0x0f172a, accent: 0x7e22ce }, // Royal Purple Glass
-    { glass: 0x10b981, frame: 0x1e293b, accent: 0x047857 }, // Emerald Crystal
-    { glass: 0xf59e0b, frame: 0x334155, accent: 0xd97706 }, // Warm Bronze / Amber
-    { glass: 0xec4899, frame: 0x111827, accent: 0xbe185d }, // Cyber Ruby
-    { glass: 0x06b6d4, frame: 0x1e293b, accent: 0x0e7490 }, // Cyan Metallic
+    { glass: 0x38bdf8, frame: 0x0f172a, emissive: 0x0284c7 }, // Sapphire Cyan
+    { glass: 0xa855f7, frame: 0x111827, emissive: 0x7e22ce }, // Royal Neon Purple
+    { glass: 0x10b981, frame: 0x064e3b, emissive: 0x047857 }, // Emerald Crystal
+    { glass: 0xf59e0b, frame: 0x1e293b, emissive: 0xd97706 }, // Gold Champagne
+    { glass: 0xec4899, frame: 0x1f2937, emissive: 0xbe185d }, // Ruby Rose Glass
+    { glass: 0x06b6d4, frame: 0x0f172a, emissive: 0x0e7490 }, // Electric Cyan
   ];
   const palette = palettes[idx % palettes.length];
   const customColor = proj.buildingColor ? parseInt(proj.buildingColor.replace('#', '0x')) : palette.glass;
 
-  // 5 Architectural Styles (Cylindrical Helix, Stepped Art Deco, High-Tech Lattice, Brick Loft, Diamond Tower)
+  // 5 Distinct Iconic Landmark Styles
   const styleType = idx % 5;
 
   if (styleType === 0) {
-    // 🏢 STYLE 1: Cylindrical Glass Tower with Helical Rings
-    const radius = 1.4;
-    const baseGeo = new THREE.CylinderGeometry(radius + 0.3, radius + 0.5, 0.5, 24);
-    const baseMat = new THREE.MeshStandardMaterial({ color: palette.frame, metalness: 0.9, roughness: 0.2 });
-    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-    baseMesh.position.y = 0.2;
-    buildingGroup.add(baseMesh);
+    // 🗼 LANDMARK 1: BURJ KHALIFA STYLE MEGA-SPIRE (Tapered 4-Tier Cylindrical Spire)
+    const tier1H = totalHeight * 0.4;
+    const tier2H = totalHeight * 0.3;
+    const tier3H = totalHeight * 0.2;
+    const tier4H = totalHeight * 0.1;
 
-    // Main Glass Cylinder Body
-    const towerGeo = new THREE.CylinderGeometry(radius, radius, totalHeight, 24);
-    const towerMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      emissive: customColor,
-      emissiveIntensity: 0.4,
-      metalness: 0.9,
-      roughness: 0.1,
-      transparent: true,
-      opacity: 0.95
-    });
-    const towerMesh = new THREE.Mesh(towerGeo, towerMat);
-    towerMesh.position.y = 0.4 + totalHeight / 2;
-    towerMesh.castShadow = true;
-    buildingGroup.add(towerMesh);
-
-    // Helical Balcony Rings
-    for (let f = 1; f < floors; f += 3) {
-      const ringGeo = new THREE.TorusGeometry(radius + 0.08, 0.05, 8, 24);
-      const ringMat = new THREE.MeshBasicMaterial({ color: customColor });
-      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-      ringMesh.rotation.x = Math.PI / 2;
-      ringMesh.position.y = 0.4 + f * floorHeight;
-      buildingGroup.add(ringMesh);
-    }
-  } else if (styleType === 1) {
-    // 🏛️ STYLE 2: Stepped Empire Art Deco Skyscraper (3 Tiers)
-    const tier1Height = totalHeight * 0.45;
-    const tier2Height = totalHeight * 0.35;
-    const tier3Height = totalHeight * 0.20;
-
-    // Tier 1 (Base)
-    const t1Geo = new THREE.BoxGeometry(2.8, tier1Height, 2.8);
-    const t1Mat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.3 });
+    // Tier 1 (Base Cylinder)
+    const t1Geo = new THREE.CylinderGeometry(2.2, 2.6, tier1H, 16);
+    const t1Mat = new THREE.MeshStandardMaterial({ color: 0x0f172a, emissive: customColor, emissiveIntensity: 0.35, roughness: 0.1, metalness: 0.9 });
     const t1Mesh = new THREE.Mesh(t1Geo, t1Mat);
-    t1Mesh.position.y = 0.2 + tier1Height / 2;
+    t1Mesh.position.y = 0.2 + tier1H / 2;
     buildingGroup.add(t1Mesh);
 
-    // Tier 2 (Middle Tower)
-    const t2Geo = new THREE.BoxGeometry(2.1, tier2Height, 2.1);
-    const t2Mat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      emissive: customColor,
-      emissiveIntensity: 0.35,
-      metalness: 0.85,
-      roughness: 0.2
-    });
+    // Tier 2 (Middle Spire)
+    const t2Geo = new THREE.CylinderGeometry(1.6, 2.0, tier2H, 16);
+    const t2Mat = new THREE.MeshStandardMaterial({ color: 0x1e293b, emissive: customColor, emissiveIntensity: 0.45, roughness: 0.1, metalness: 0.9 });
     const t2Mesh = new THREE.Mesh(t2Geo, t2Mat);
-    t2Mesh.position.y = 0.2 + tier1Height + tier2Height / 2;
+    t2Mesh.position.y = 0.2 + tier1H + tier2H / 2;
     buildingGroup.add(t2Mesh);
 
-    // Tier 3 (Top Spire Tower)
-    const t3Geo = new THREE.BoxGeometry(1.4, tier3Height, 1.4);
-    const t3Mat = new THREE.MeshStandardMaterial({ color: customColor, emissive: customColor, emissiveIntensity: 0.6 });
+    // Tier 3 (Upper Tower)
+    const t3Geo = new THREE.CylinderGeometry(1.0, 1.4, tier3H, 16);
+    const t3Mat = new THREE.MeshStandardMaterial({ color: customColor, emissive: customColor, emissiveIntensity: 0.6, roughness: 0.1, metalness: 0.95 });
     const t3Mesh = new THREE.Mesh(t3Geo, t3Mat);
-    t3Mesh.position.y = 0.2 + tier1Height + tier2Height + tier3Height / 2;
+    t3Mesh.position.y = 0.2 + tier1H + tier2H + tier3H / 2;
     buildingGroup.add(t3Mesh);
 
+    // Tier 4 (Rooftop Needle Spire)
+    const t4Geo = new THREE.CylinderGeometry(0.1, 0.8, tier4H + 2.5, 12);
+    const t4Mat = new THREE.MeshBasicMaterial({ color: customColor });
+    const t4Mesh = new THREE.Mesh(t4Geo, t4Mat);
+    t4Mesh.position.y = 0.2 + tier1H + tier2H + tier3H + (tier4H + 2.5) / 2;
+    buildingGroup.add(t4Mesh);
+
+    // Searchlight Beacon on Spire Apex
+    const beaconGeo = new THREE.SphereGeometry(0.25, 8, 8);
+    const beaconMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
+    beaconMesh.position.y = 0.2 + totalHeight + 3.0;
+    buildingGroup.add(beaconMesh);
+
+  } else if (styleType === 1) {
+    // 🏢 LANDMARK 2: GOOGLE TECH HQ STYLE MODERN CANTILEVERED GLASS CAMPUS
+    const blockCount = Math.min(5, Math.floor(floors / 4) + 2);
+    const blockH = totalHeight / blockCount;
+
+    for (let b = 0; b < blockCount; b++) {
+      const offsetX = (b % 2 === 0 ? 0.3 : -0.3);
+      const offsetZ = (b % 3 === 0 ? 0.2 : -0.2);
+      const blockGeo = new THREE.BoxGeometry(2.4, blockH * 0.92, 2.4);
+      
+      const blockMat = new THREE.MeshStandardMaterial({
+        color: (b % 2 === 0 ? customColor : 0x0f172a),
+        emissive: customColor,
+        emissiveIntensity: (b % 2 === 0 ? 0.6 : 0.25),
+        roughness: 0.1,
+        metalness: 0.95
+      });
+      const blockMesh = new THREE.Mesh(blockGeo, blockMat);
+      blockMesh.position.set(offsetX, 0.2 + b * blockH + blockH / 2, offsetZ);
+      blockMesh.castShadow = true;
+      buildingGroup.add(blockMesh);
+
+      // Connecting Glass Bridges
+      if (b > 0) {
+        const bridgeGeo = new THREE.BoxGeometry(0.8, 0.3, 0.8);
+        const bridgeMat = new THREE.MeshBasicMaterial({ color: customColor });
+        const bridgeMesh = new THREE.Mesh(bridgeGeo, bridgeMat);
+        bridgeMesh.position.set(0, 0.2 + b * blockH, 0);
+        buildingGroup.add(bridgeMesh);
+      }
+    }
+
   } else if (styleType === 2) {
-    // 🌐 STYLE 3: High-Tech Lattice Steel Tower (Diagonal Trusses)
+    // 🌐 LANDMARK 3: CYBER SPIRE HIGH-TECH LATTICE SKYSCRAPER
     const bodyGeo = new THREE.BoxGeometry(2.2, totalHeight, 2.2);
     const bodyMat = new THREE.MeshStandardMaterial({
       color: 0x090d16,
@@ -249,7 +207,7 @@ function createArchitecturalBuilding(proj: Project, idx: number): THREE.Group {
     buildingGroup.add(bodyMesh);
 
     // Outer Diagonal Steel Lattice Cage
-    const cageGeo = new THREE.BoxGeometry(2.35, totalHeight, 2.35);
+    const cageGeo = new THREE.BoxGeometry(2.38, totalHeight, 2.38);
     const cageMat = new THREE.MeshStandardMaterial({
       color: customColor,
       wireframe: true
@@ -258,20 +216,35 @@ function createArchitecturalBuilding(proj: Project, idx: number): THREE.Group {
     cageMesh.position.y = 0.2 + totalHeight / 2;
     buildingGroup.add(cageMesh);
 
+    // Rooftop Helipad
+    const helipadGeo = new THREE.CylinderGeometry(1.3, 1.3, 0.15, 24);
+    const helipadMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9 });
+    const helipadMesh = new THREE.Mesh(helipadGeo, helipadMat);
+    helipadMesh.position.y = 0.2 + totalHeight + 0.1;
+    buildingGroup.add(helipadMesh);
+
+    // Helipad Landing Light Ring
+    const ringGeo = new THREE.TorusGeometry(1.2, 0.05, 8, 24);
+    const ringMat = new THREE.MeshBasicMaterial({ color: customColor });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    ringMesh.rotation.x = Math.PI / 2;
+    ringMesh.position.y = 0.2 + totalHeight + 0.2;
+    buildingGroup.add(ringMesh);
+
   } else if (styleType === 3) {
-    // 🧱 STYLE 4: Industrial Brick & Glass Loft Tower
+    // 🏛️ LANDMARK 4: STEPPED ART-DECO GLASS & COPPER TOWER
     for (let f = 0; f < floors; f++) {
-      const width = 2.4 - f * 0.02;
-      const depth = 2.4 - f * 0.02;
+      const width = 2.5 - f * 0.04;
+      const depth = 2.5 - f * 0.04;
       const floorGeo = new THREE.BoxGeometry(width, floorHeight * 0.9, depth);
       
       const isTop = f === floors - 1;
       const floorMat = new THREE.MeshStandardMaterial({
-        color: isTop ? customColor : (f % 2 === 0 ? 0x334155 : 0x1e293b),
-        emissive: isTop ? customColor : (f % 3 === 0 ? customColor : 0x000000),
-        emissiveIntensity: isTop ? 0.8 : 0.25,
-        roughness: 0.4,
-        metalness: 0.6,
+        color: isTop ? customColor : (f % 2 === 0 ? 0x1e293b : 0x0f172a),
+        emissive: isTop ? customColor : (f % 2 === 0 ? customColor : 0x000000),
+        emissiveIntensity: isTop ? 0.8 : 0.35,
+        roughness: 0.2,
+        metalness: 0.8,
       });
 
       const floorMesh = new THREE.Mesh(floorGeo, floorMat);
@@ -279,12 +252,12 @@ function createArchitecturalBuilding(proj: Project, idx: number): THREE.Group {
       buildingGroup.add(floorMesh);
     }
   } else {
-    // 💎 STYLE 5: Diamond Facet Prism Tower
-    const prismGeo = new THREE.CylinderGeometry(0.8, 1.6, totalHeight, 8);
+    // 💎 LANDMARK 5: CRYSTAL DIAMOND FACET TOWER
+    const prismGeo = new THREE.CylinderGeometry(0.7, 1.7, totalHeight, 8);
     const prismMat = new THREE.MeshStandardMaterial({
       color: 0x0f172a,
       emissive: customColor,
-      emissiveIntensity: 0.6,
+      emissiveIntensity: 0.65,
       metalness: 0.95,
       roughness: 0.05,
       flatShading: true
@@ -309,7 +282,6 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const buildingMeshesRef = useRef<{ id: string; mesh: THREE.Group; baseColor: string; project: Project }[]>([]);
-  const cranesRef = useRef<THREE.Group[]>([]);
   const vehiclesRef = useRef<{ mesh: THREE.Group; speed: number; angle: number; radius: number }[]>([]);
   const particlesRef = useRef<THREE.Points | null>(null);
 
@@ -335,7 +307,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     const currentTheme = themeColors[cityConfig.theme] || themeColors.cyberpunk;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(currentTheme.sky);
-    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.010);
+    scene.fog = new THREE.FogExp2(currentTheme.sky, 0.009);
     sceneRef.current = scene;
 
     // 2. Camera setup
@@ -355,10 +327,10 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     rendererRef.current = renderer;
 
     // 4. Ambient & Directional Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(currentTheme.light1, 1.5);
+    const dirLight = new THREE.DirectionalLight(currentTheme.light1, 1.6);
     dirLight.position.set(35, 45, 25);
     dirLight.castShadow = true;
     scene.add(dirLight);
@@ -430,15 +402,14 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       particlesRef.current = particles;
     }
 
-    // 7. Render Realistic Architectural 3D Buildings & Construction Sites
+    // 7. Render Iconic Architectural 3D Skyscraper Landmarks
     buildingMeshesRef.current = [];
-    cranesRef.current = [];
 
     // Sort projects by commit count to rank them
     const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
 
     sortedProjects.forEach((proj, idx) => {
-      // Concentric city layout rings (Ring 1: Finished Skylines, Ring 2/3: Active Construction Sites)
+      // Concentric city layout rings
       const ringIndex = Math.floor(idx / 8);
       const posInRing = idx % 8;
       
@@ -452,47 +423,22 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const x = Math.cos(angle) * ringRadius;
       const z = Math.sin(angle) * ringRadius;
 
-      // Build Architectural 3D Skyscraper
-      const buildingGroup = createArchitecturalBuilding(proj, idx);
+      // Build Iconic Architectural Skyscraper
+      const buildingGroup = createIconicSkyscraper(proj, idx);
       buildingGroup.position.set(x, 0, z);
 
-      const floors = Math.max(3, Math.min(26, Math.floor(proj.commitsCount / 2)));
+      const floors = Math.max(4, Math.min(28, Math.floor(proj.commitsCount / 2)));
       const totalHeight = floors * 0.65;
       const buildingColorHex = proj.buildingColor || '#38bdf8';
-      const isConstructionSite = idx % 2 === 1 || floors < 12;
-
-      // Add Construction Crane on Top of Active Construction Buildings!
-      if (isConstructionSite) {
-        const crane = createConstructionCrane();
-        crane.position.set(0, 0.4 + totalHeight, 0);
-        crane.scale.set(0.65, 0.65, 0.65);
-        buildingGroup.add(crane);
-        cranesRef.current.push(crane);
-      } else {
-        // Rooftop Spire Light
-        const spireGeo = new THREE.CylinderGeometry(0.04, 0.16, 1.4, 8);
-        const spireMat = new THREE.MeshBasicMaterial({ color: buildingColorHex });
-        const spireMesh = new THREE.Mesh(spireGeo, spireMat);
-        spireMesh.position.y = 0.4 + totalHeight + 0.7;
-        buildingGroup.add(spireMesh);
-
-        const beaconGeo = new THREE.SphereGeometry(0.18, 8, 8);
-        const beaconMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
-        beaconMesh.position.y = 0.4 + totalHeight + 1.4;
-        buildingGroup.add(beaconMesh);
-      }
 
       // Floating 3D Building Project Name Banner Above Building
       const labelText = proj.title;
-      const statusBadge = isConstructionSite 
-        ? `🚧 CONSTRUCTION • ${proj.commitsCount} COMMITS` 
-        : `🏢 COMPLETED • ${proj.commitsCount} COMMITS`;
+      const statusBadge = `🏢 ${proj.category.toUpperCase()} • ${proj.commitsCount} COMMITS`;
 
       const texture = createTextLabelTexture(labelText, statusBadge, buildingColorHex);
       const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
       const labelSprite = new THREE.Sprite(spriteMat);
-      labelSprite.position.set(0, 0.4 + totalHeight + (isConstructionSite ? 6.5 : 2.5), 0);
+      labelSprite.position.set(0, 0.4 + totalHeight + 3.2, 0);
       labelSprite.scale.set(7.5, 1.85, 1);
       buildingGroup.add(labelSprite);
 
@@ -617,7 +563,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
 
-    // 11. Real-time Animation Loop (Cranes, Vehicles, Starfield)
+    // 11. Real-time Animation Loop (Vehicles, Starfield, Hover Glow)
     let animationFrameId: number;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
@@ -629,11 +575,6 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         camera.position.z = Math.cos(cameraAngle) * currentRadius;
         camera.lookAt(0, 4, 0);
       }
-
-      // Rotate Cranes Arms slowly
-      cranesRef.current.forEach((crane) => {
-        crane.children[1].rotation.y += 0.008;
-      });
 
       // Animate Vehicles driving on highway ring
       vehiclesRef.current.forEach((v) => {
@@ -738,7 +679,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
               : 'bg-slate-900/90 text-slate-400 border-slate-700 hover:text-white'
           }`}
         >
-          <span>🏗</span> Construction Drone View
+          <span>🏢</span> Architectural Drone View
         </button>
       </div>
 
@@ -746,10 +687,10 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       <div className="absolute bottom-3 left-3 z-10 p-2.5 rounded-xl glass-panel border border-slate-700/60 text-xs font-mono-code pointer-events-auto hidden sm:block">
         <div className="flex items-center gap-2 text-sky-400 font-bold mb-1">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          3D ARCHITECTURAL CONSTRUCTION CITY
+          3D ARCHITECTURAL LANDMARK METROPOLIS
         </div>
         <p className="text-slate-400 text-[10px]">
-          • 5 Architectural Styles • Glass, Stepped & Lattice Skyscrapers
+          • Iconic Landmarks: Burj Khalifa Spire, Google Tech HQ, Cyber Spire & Glass Towers
         </p>
         <p className="text-slate-400 text-[10px]">
           • Inspect: Click any 3D Building
