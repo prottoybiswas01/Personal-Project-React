@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Project } from '../../types/portfolio';
-import { Layers, GitCommit, ExternalLink, Box, Code, RefreshCw, Trophy } from 'lucide-react';
+import { Layers, GitCommit, ExternalLink, Box, Code, RefreshCw, Trophy, ExternalLink as ArrowLink } from 'lucide-react';
 import { playSound } from '../../utils/storage';
 
 interface ProjectsSectionProps {
@@ -18,14 +18,18 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
-  // Sort projects descending by commits count (most active projects first!)
+  // 1. Sort projects descending by commits count (most committed projects rank highest!)
   const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
 
-  const categories = ['All', 'Full Stack', 'Frontend', 'Backend', 'UI/UX'];
-
+  // 2. Filter by category
   const filteredProjects = selectedCategory === 'All'
     ? sortedProjects
     : sortedProjects.filter(p => p.category === selectedCategory);
+
+  // 3. Limit to TOP 6 projects only for this grid view!
+  const top6GridProjects = filteredProjects.slice(0, 6);
+
+  const categories = ['All', 'Full Stack', 'Frontend', 'Backend', 'UI/UX'];
 
   return (
     <section id="projects" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -33,26 +37,26 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-4 mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-xs font-mono-code text-sky-400">
-          <Box className="w-3.5 h-3.5" />
-          <span>3D SKYSCRAPER PROJECT CATALOG ({projects.length} REPOSITORIES)</span>
+          <Trophy className="w-3.5 h-3.5 text-amber-400" />
+          <span>TOP 6 MOST COMMITTED PROJECTS</span>
         </div>
         
         <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-white">
-          Complete GitHub <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-purple-500">Repositories & Applications</span>
+          Featured <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-purple-500">Repositories & Applications</span>
         </h2>
         
         <p className="text-slate-400 text-xs sm:text-sm font-sans leading-relaxed">
-          Projects are automatically ranked by Git commit activity. The repositories with the most commits rank highest and build the tallest 3D Skyscrapers!
+          Showing the top 6 repositories ranked by Git commit activity. Repositories with the highest commits rank first!
         </p>
 
-        <div className="pt-2 flex justify-center">
+        <div className="pt-2 flex justify-center gap-3 flex-wrap">
           <button
             onClick={() => {
               playSound('click');
               onSyncGitHub();
             }}
             disabled={isSyncingGitHub}
-            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40 text-xs font-mono-code font-bold flex items-center gap-2 shadow-lg glow-cyan transition-all"
+            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40 text-xs font-mono-code font-bold flex items-center gap-2 shadow-lg glow-cyan transition-all"
           >
             <RefreshCw className={`w-4 h-4 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : 'text-sky-400'}`} />
             <span>{isSyncingGitHub ? 'SYNCING LIVE REPOS...' : 'REFRESH & SYNC GITHUB REPOSITORIES'}</span>
@@ -80,9 +84,9 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         ))}
       </div>
 
-      {/* Projects Grid */}
+      {/* Projects Grid (LIMITED TO EXACTLY 6 CARDS) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        {filteredProjects.map((project, rank) => {
+        {top6GridProjects.map((project, rank) => {
           const floors = Math.max(3, Math.floor(project.commitsCount / 2));
           return (
             <div
@@ -190,6 +194,20 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
             </div>
           );
         })}
+      </div>
+
+      {/* Footer CTA: See All Repositories on GitHub */}
+      <div className="mt-12 text-center">
+        <a
+          href="https://github.com/prottoybiswas01?tab=repositories"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => playSound('click')}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-500/30 text-sky-300 font-mono-code text-xs font-bold transition-all shadow-lg glow-cyan"
+        >
+          <span>SEE ALL {projects.length} REPOSITORIES ON GITHUB</span>
+          <ArrowLink className="w-4 h-4" />
+        </a>
       </div>
 
     </section>
