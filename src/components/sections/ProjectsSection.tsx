@@ -1,0 +1,173 @@
+import React, { useState } from 'react';
+import type { Project } from '../../types/portfolio';
+import { Layers, GitCommit, ExternalLink, Box, Code } from 'lucide-react';
+import { playSound } from '../../utils/storage';
+
+interface ProjectsSectionProps {
+  projects: Project[];
+  onSelectProject: (project: Project) => void;
+}
+
+export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
+  projects,
+  onSelectProject,
+}) => {
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  const categories = ['All', 'Full Stack', 'Frontend', 'Backend', 'UI/UX'];
+
+  const filteredProjects = selectedCategory === 'All'
+    ? projects
+    : projects.filter(p => p.category === selectedCategory);
+
+  return (
+    <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      
+      {/* Header */}
+      <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-xs font-mono-code text-sky-400">
+          <Box className="w-3.5 h-3.5" />
+          <span>3D SKYSCRAPER PROJECT CATALOG</span>
+        </div>
+        <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-white">
+          Featured Web <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-purple-500">Applications & Systems</span>
+        </h2>
+        <p className="text-slate-400 text-sm font-sans">
+          Each project is dynamically modeled as a 3D skyscraper in our interactive GitHub city. Commit activity controls building floor heights!
+        </p>
+      </div>
+
+      {/* Category Filter Pills */}
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => {
+              playSound('click');
+              setSelectedCategory(cat);
+            }}
+            className={`px-5 py-2.5 rounded-xl text-xs font-mono-code transition-all border ${
+              selectedCategory === cat
+                ? 'bg-sky-500/20 text-sky-300 border-sky-400 glow-cyan font-bold'
+                : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Projects Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {filteredProjects.map((project) => {
+          const floors = Math.max(3, Math.floor(project.commitsCount / 2));
+          return (
+            <div
+              key={project.id}
+              className="group glass-panel rounded-2xl border border-slate-800 hover:border-sky-500/50 transition-all duration-300 overflow-hidden flex flex-col justify-between"
+            >
+              <div>
+                {/* Image & Badges */}
+                <div className="relative h-48 w-full overflow-hidden bg-slate-950">
+                  {project.imageUrl ? (
+                    <img
+                      src={project.imageUrl}
+                      alt={project.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-900 text-slate-700">
+                      <Code className="w-12 h-12" />
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+
+                  {/* Top Badges */}
+                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-mono-code bg-slate-950/90 text-sky-300 border border-sky-500/30">
+                      {project.category}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-mono-code bg-purple-950/90 text-purple-300 border border-purple-500/40 flex items-center gap-1">
+                      <Layers className="w-3 h-3 text-purple-400" />
+                      {floors} Floors
+                    </span>
+                  </div>
+
+                  {/* Bottom Commit Badge */}
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[11px] font-mono-code text-emerald-400 bg-slate-950/80 px-2.5 py-1 rounded-md border border-emerald-500/30">
+                    <GitCommit className="w-3.5 h-3.5" />
+                    <span>{project.commitsCount} Commits</span>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 space-y-3">
+                  <h3 className="text-xl font-heading font-bold text-white group-hover:text-sky-300 transition-colors">
+                    {project.title}
+                  </h3>
+                  <p className="text-xs text-sky-400 font-mono-code">{project.subtitle}</p>
+                  <p className="text-slate-400 text-xs leading-relaxed line-clamp-3 font-sans">
+                    {project.description}
+                  </p>
+
+                  {/* Tech stack tags */}
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    {project.techStack.map((tech, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 rounded text-[10px] font-mono-code bg-slate-900 text-slate-300 border border-slate-800"
+                      >
+                        #{tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Footer Actions */}
+              <div className="p-6 pt-0 border-t border-slate-900/60 mt-4 flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    playSound('click');
+                    onSelectProject(project);
+                  }}
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-mono-code font-bold flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <Box className="w-4 h-4" />
+                  <span>Inspect 3D Building</span>
+                </button>
+
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => playSound('click')}
+                  className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all"
+                  title="View GitHub Source"
+                >
+                  <GitCommit className="w-4 h-4" />
+                </a>
+
+                {project.liveUrl && (
+                  <a
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => playSound('click')}
+                    className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 hover:text-sky-300 border border-slate-800 transition-all"
+                    title="Launch Live Demo"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+
+            </div>
+          );
+        })}
+      </div>
+
+    </section>
+  );
+};
