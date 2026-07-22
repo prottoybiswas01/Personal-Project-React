@@ -16,7 +16,7 @@ app.use(express.json());
 app.use('/api', portfolioRoutes);
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', database: 'MongoDB Atlas Connected', timestamp: new Date() });
 });
 

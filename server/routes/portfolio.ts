@@ -82,7 +82,7 @@ export async function syncGitHubRepositories(username: string = 'prottoybiswas01
 }
 
 // GET /api/github/sync -> Fetch & Sync Live Repos from GitHub API to MongoDB
-router.get('/github/sync', async (req, res) => {
+router.get('/github/sync', async (_req, res) => {
   try {
     const repos = await syncGitHubRepositories();
     const allProjects = await ProjectModel.find().sort({ createdAt: -1 }).lean();
@@ -91,13 +91,13 @@ router.get('/github/sync', async (req, res) => {
       message: `Successfully synced ${repos.length} live repositories from github.com/prottoybiswas01`,
       projects: allProjects
     });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to sync with GitHub API' });
   }
 });
 
 // GET /api/portfolio -> fetch entire portfolio state from MongoDB
-router.get('/portfolio', async (req, res) => {
+router.get('/portfolio', async (_req, res) => {
   try {
     const profile = await ProfileModel.findOne().lean() || initialPortfolioData.profile;
     const projects = await ProjectModel.find().sort({ createdAt: -1 }).lean();
@@ -127,7 +127,7 @@ router.put('/portfolio/profile', async (req, res) => {
   try {
     const updated = await ProfileModel.findOneAndUpdate({}, req.body, { new: true, upsert: true });
     res.json(updated);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
@@ -141,7 +141,7 @@ router.post('/portfolio/projects', async (req, res) => {
     };
     const created = await ProjectModel.create(projData);
     res.status(201).json(created);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to create project in MongoDB' });
   }
 });
@@ -151,7 +151,7 @@ router.put('/portfolio/projects/:id', async (req, res) => {
   try {
     const updated = await ProjectModel.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
     res.json(updated);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to update project' });
   }
 });
@@ -161,7 +161,7 @@ router.delete('/portfolio/projects/:id', async (req, res) => {
   try {
     await ProjectModel.deleteOne({ id: req.params.id });
     res.json({ success: true, deletedId: req.params.id });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to delete project' });
   }
 });
@@ -176,7 +176,7 @@ router.post('/portfolio/projects/:id/commit', async (req, res) => {
       { new: true }
     );
     res.json(updated);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to push commit' });
   }
 });
@@ -186,7 +186,7 @@ router.put('/portfolio/city-config', async (req, res) => {
   try {
     const updated = await CityConfigModel.findOneAndUpdate({}, req.body, { new: true, upsert: true });
     res.json(updated);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to update 3D city config' });
   }
 });
@@ -202,7 +202,7 @@ router.post('/portfolio/messages', async (req, res) => {
     };
     const created = await MessageModel.create(msg);
     res.status(201).json(created);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to transmit message' });
   }
 });
@@ -212,17 +212,17 @@ router.delete('/portfolio/messages/:id', async (req, res) => {
   try {
     await MessageModel.deleteOne({ id: req.params.id });
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to delete message' });
   }
 });
 
 // POST /api/portfolio/reset -> reset DB to seed data
-router.post('/portfolio/reset', async (req, res) => {
+router.post('/portfolio/reset', async (_req, res) => {
   try {
     await seedDatabase();
     res.json({ success: true, message: 'Database reset to Prottoy Biswas defaults' });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to reset database' });
   }
 });
