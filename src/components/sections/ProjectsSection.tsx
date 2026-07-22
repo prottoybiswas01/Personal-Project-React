@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Project } from '../../types/portfolio';
-import { Layers, GitCommit, ExternalLink, Box, Code, RefreshCw, Trophy, ChevronDown, ChevronUp } from 'lucide-react';
+import { Layers, GitCommit, ExternalLink, Box, Code, RefreshCw, Trophy } from 'lucide-react';
 import { playSound } from '../../utils/storage';
 
 interface ProjectsSectionProps {
@@ -19,7 +19,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   onOpenAllProjectsModal,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [showAllGrid, setShowAllGrid] = useState<boolean>(false);
+  const showAllGrid = true;
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // 1. Sort projects descending by commits count (most committed projects rank highest!)
@@ -41,20 +41,6 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   const displayedProjects = showAllGrid ? filteredProjects : filteredProjects.slice(0, 6);
 
   const categories = ['All', 'Full Stack', 'Frontend', 'Backend', 'UI/UX'];
-
-  const handleToggleViewAll = () => {
-    playSound('click');
-    const nextShowAll = !showAllGrid;
-    setShowAllGrid(nextShowAll);
-
-    // Scroll smoothly to the top of the Projects Section so user is immediately taken inside the full grid
-    setTimeout(() => {
-      const projElem = document.getElementById('projects');
-      if (projElem) {
-        projElem.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 50);
-  };
 
   return (
     <section id="projects" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-16">
@@ -257,17 +243,9 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         })}
       </div>
 
-      {/* Expand/Collapse Toggle Button for All 48 Projects */}
-      <div className="mt-12 text-center flex flex-wrap items-center justify-center gap-4">
-        <button
-          onClick={handleToggleViewAll}
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-500/40 text-sky-300 font-mono-code text-xs font-bold transition-all shadow-lg glow-cyan"
-        >
-          <span>{showAllGrid ? 'SHOW TOP 6 PROJECTS ONLY' : `VIEW ALL ${projects.length} REPOSITORIES IN GRID`}</span>
-          {showAllGrid ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
-
-        {onOpenAllProjectsModal && (
+      {/* Bottom Directory Launcher */}
+      {onOpenAllProjectsModal && (
+        <div className="mt-12 text-center">
           <button
             onClick={() => {
               playSound('click');
@@ -275,10 +253,10 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
             }}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-sky-500/20 to-purple-500/20 hover:from-sky-500/30 hover:to-purple-500/30 border border-sky-400/50 text-sky-300 font-mono-code text-xs font-bold transition-all shadow-lg"
           >
-            <span>FULL DIRECTORY MODAL ({projects.length})</span>
+            <span>EXPLORE FULL REPOSITORY DIRECTORY ({projects.length})</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
     </section>
   );
