@@ -20,7 +20,7 @@ function createTextLabelTexture(text: string, status: string, colorHex: string):
 
   if (ctx) {
     // Glassmorphic Label Background
-    ctx.fillStyle = 'rgba(9, 13, 22, 0.85)';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
     ctx.beginPath();
     ctx.roundRect(10, 10, 492, 108, 16);
     ctx.fill();
@@ -104,7 +104,7 @@ function createVehicle(colorHex: string): THREE.Group {
   // Car Body
   const bodyGeo = new THREE.BoxGeometry(0.8, 0.4, 1.4);
   const bodyMat = new THREE.MeshStandardMaterial({
-    color: colorHex,
+    color: parseInt(colorHex, 16),
     metalness: 0.9,
     roughness: 0.1,
   });
@@ -142,6 +142,159 @@ function createVehicle(colorHex: string): THREE.Group {
   vehicleGroup.add(taillight2);
 
   return vehicleGroup;
+}
+
+// 🏛️ REALISTIC ARCHITECTURAL 3D SKYSCRAPER BUILDER
+function createArchitecturalBuilding(proj: Project, idx: number): THREE.Group {
+  const buildingGroup = new THREE.Group();
+
+  const floors = Math.max(3, Math.min(26, Math.floor(proj.commitsCount / 2)));
+  const floorHeight = 0.65;
+  const totalHeight = floors * floorHeight;
+
+  // Curated Architectural Color Palettes
+  const palettes = [
+    { glass: 0x38bdf8, frame: 0x1e293b, accent: 0x0284c7 }, // Sapphire Glass & Slate
+    { glass: 0xa855f7, frame: 0x0f172a, accent: 0x7e22ce }, // Royal Purple Glass
+    { glass: 0x10b981, frame: 0x1e293b, accent: 0x047857 }, // Emerald Crystal
+    { glass: 0xf59e0b, frame: 0x334155, accent: 0xd97706 }, // Warm Bronze / Amber
+    { glass: 0xec4899, frame: 0x111827, accent: 0xbe185d }, // Cyber Ruby
+    { glass: 0x06b6d4, frame: 0x1e293b, accent: 0x0e7490 }, // Cyan Metallic
+  ];
+  const palette = palettes[idx % palettes.length];
+  const customColor = proj.buildingColor ? parseInt(proj.buildingColor.replace('#', '0x')) : palette.glass;
+
+  // 5 Architectural Styles (Cylindrical Helix, Stepped Art Deco, High-Tech Lattice, Brick Loft, Diamond Tower)
+  const styleType = idx % 5;
+
+  if (styleType === 0) {
+    // 🏢 STYLE 1: Cylindrical Glass Tower with Helical Rings
+    const radius = 1.4;
+    const baseGeo = new THREE.CylinderGeometry(radius + 0.3, radius + 0.5, 0.5, 24);
+    const baseMat = new THREE.MeshStandardMaterial({ color: palette.frame, metalness: 0.9, roughness: 0.2 });
+    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+    baseMesh.position.y = 0.2;
+    buildingGroup.add(baseMesh);
+
+    // Main Glass Cylinder Body
+    const towerGeo = new THREE.CylinderGeometry(radius, radius, totalHeight, 24);
+    const towerMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      emissive: customColor,
+      emissiveIntensity: 0.4,
+      metalness: 0.9,
+      roughness: 0.1,
+      transparent: true,
+      opacity: 0.95
+    });
+    const towerMesh = new THREE.Mesh(towerGeo, towerMat);
+    towerMesh.position.y = 0.4 + totalHeight / 2;
+    towerMesh.castShadow = true;
+    buildingGroup.add(towerMesh);
+
+    // Helical Balcony Rings
+    for (let f = 1; f < floors; f += 3) {
+      const ringGeo = new THREE.TorusGeometry(radius + 0.08, 0.05, 8, 24);
+      const ringMat = new THREE.MeshBasicMaterial({ color: customColor });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = Math.PI / 2;
+      ringMesh.position.y = 0.4 + f * floorHeight;
+      buildingGroup.add(ringMesh);
+    }
+  } else if (styleType === 1) {
+    // 🏛️ STYLE 2: Stepped Empire Art Deco Skyscraper (3 Tiers)
+    const tier1Height = totalHeight * 0.45;
+    const tier2Height = totalHeight * 0.35;
+    const tier3Height = totalHeight * 0.20;
+
+    // Tier 1 (Base)
+    const t1Geo = new THREE.BoxGeometry(2.8, tier1Height, 2.8);
+    const t1Mat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.3 });
+    const t1Mesh = new THREE.Mesh(t1Geo, t1Mat);
+    t1Mesh.position.y = 0.2 + tier1Height / 2;
+    buildingGroup.add(t1Mesh);
+
+    // Tier 2 (Middle Tower)
+    const t2Geo = new THREE.BoxGeometry(2.1, tier2Height, 2.1);
+    const t2Mat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      emissive: customColor,
+      emissiveIntensity: 0.35,
+      metalness: 0.85,
+      roughness: 0.2
+    });
+    const t2Mesh = new THREE.Mesh(t2Geo, t2Mat);
+    t2Mesh.position.y = 0.2 + tier1Height + tier2Height / 2;
+    buildingGroup.add(t2Mesh);
+
+    // Tier 3 (Top Spire Tower)
+    const t3Geo = new THREE.BoxGeometry(1.4, tier3Height, 1.4);
+    const t3Mat = new THREE.MeshStandardMaterial({ color: customColor, emissive: customColor, emissiveIntensity: 0.6 });
+    const t3Mesh = new THREE.Mesh(t3Geo, t3Mat);
+    t3Mesh.position.y = 0.2 + tier1Height + tier2Height + tier3Height / 2;
+    buildingGroup.add(t3Mesh);
+
+  } else if (styleType === 2) {
+    // 🌐 STYLE 3: High-Tech Lattice Steel Tower (Diagonal Trusses)
+    const bodyGeo = new THREE.BoxGeometry(2.2, totalHeight, 2.2);
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: 0x090d16,
+      emissive: customColor,
+      emissiveIntensity: 0.5,
+      metalness: 0.9,
+      roughness: 0.1
+    });
+    const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+    bodyMesh.position.y = 0.2 + totalHeight / 2;
+    buildingGroup.add(bodyMesh);
+
+    // Outer Diagonal Steel Lattice Cage
+    const cageGeo = new THREE.BoxGeometry(2.35, totalHeight, 2.35);
+    const cageMat = new THREE.MeshStandardMaterial({
+      color: customColor,
+      wireframe: true
+    });
+    const cageMesh = new THREE.Mesh(cageGeo, cageMat);
+    cageMesh.position.y = 0.2 + totalHeight / 2;
+    buildingGroup.add(cageMesh);
+
+  } else if (styleType === 3) {
+    // 🧱 STYLE 4: Industrial Brick & Glass Loft Tower
+    for (let f = 0; f < floors; f++) {
+      const width = 2.4 - f * 0.02;
+      const depth = 2.4 - f * 0.02;
+      const floorGeo = new THREE.BoxGeometry(width, floorHeight * 0.9, depth);
+      
+      const isTop = f === floors - 1;
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: isTop ? customColor : (f % 2 === 0 ? 0x334155 : 0x1e293b),
+        emissive: isTop ? customColor : (f % 3 === 0 ? customColor : 0x000000),
+        emissiveIntensity: isTop ? 0.8 : 0.25,
+        roughness: 0.4,
+        metalness: 0.6,
+      });
+
+      const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+      floorMesh.position.y = 0.4 + f * floorHeight + floorHeight / 2;
+      buildingGroup.add(floorMesh);
+    }
+  } else {
+    // 💎 STYLE 5: Diamond Facet Prism Tower
+    const prismGeo = new THREE.CylinderGeometry(0.8, 1.6, totalHeight, 8);
+    const prismMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      emissive: customColor,
+      emissiveIntensity: 0.6,
+      metalness: 0.95,
+      roughness: 0.05,
+      flatShading: true
+    });
+    const prismMesh = new THREE.Mesh(prismGeo, prismMat);
+    prismMesh.position.y = 0.2 + totalHeight / 2;
+    buildingGroup.add(prismMesh);
+  }
+
+  return buildingGroup;
 }
 
 export const CityCanvas: React.FC<CityCanvasProps> = ({
@@ -187,7 +340,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     // 2. Camera setup
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(32, 26, 38);
+    camera.position.set(34, 28, 40);
     camera.lookAt(0, 4, 0);
     cameraRef.current = camera;
 
@@ -277,7 +430,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       particlesRef.current = particles;
     }
 
-    // 7. Render 3D Buildings & Construction Sites with Floating Names
+    // 7. Render Realistic Architectural 3D Buildings & Construction Sites
     buildingMeshesRef.current = [];
     cranesRef.current = [];
 
@@ -299,66 +452,16 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       const x = Math.cos(angle) * ringRadius;
       const z = Math.sin(angle) * ringRadius;
 
-      const buildingGroup = new THREE.Group();
+      // Build Architectural 3D Skyscraper
+      const buildingGroup = createArchitecturalBuilding(proj, idx);
       buildingGroup.position.set(x, 0, z);
 
-      // Height & Construction Status
       const floors = Math.max(3, Math.min(26, Math.floor(proj.commitsCount / 2)));
-      const floorHeight = 0.65;
-      const totalHeight = floors * floorHeight;
+      const totalHeight = floors * 0.65;
       const buildingColorHex = proj.buildingColor || '#38bdf8';
+      const isConstructionSite = idx % 2 === 1 || floors < 12;
 
-      const isConstructionSite = idx % 2 === 1 || floors < 12; // Alternating construction sites vs finished towers
-
-      // Base Pedestal
-      const baseGeo = new THREE.BoxGeometry(2.6, 0.4, 2.6);
-      const baseMat = new THREE.MeshStandardMaterial({
-        color: 0x1e293b,
-        metalness: 0.9,
-        roughness: 0.2,
-      });
-      const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-      baseMesh.position.y = 0.2;
-      baseMesh.castShadow = true;
-      baseMesh.receiveShadow = true;
-      buildingGroup.add(baseMesh);
-
-      // Stacked Floors
-      for (let f = 0; f < floors; f++) {
-        const width = 2.2 - f * 0.03;
-        const depth = 2.2 - f * 0.03;
-        const floorGeo = new THREE.BoxGeometry(width, floorHeight * 0.88, depth);
-        
-        const isTop = f === floors - 1;
-
-        if (isConstructionSite && isTop) {
-          // Unfinished Top Floor (Exposed Steel Frame / Scaffolding)
-          const frameGeo = new THREE.BoxGeometry(width, floorHeight * 0.88, depth);
-          const frameMat = new THREE.MeshStandardMaterial({
-            color: 0xf59e0b,
-            wireframe: true
-          });
-          const frameMesh = new THREE.Mesh(frameGeo, frameMat);
-          frameMesh.position.y = 0.4 + f * floorHeight + floorHeight / 2;
-          buildingGroup.add(frameMesh);
-        } else {
-          // Glass / Metallic Facade
-          const floorMat = new THREE.MeshStandardMaterial({
-            color: isTop ? buildingColorHex : 0x0f172a,
-            emissive: isTop ? buildingColorHex : (f % 2 === 0 ? buildingColorHex : 0x000000),
-            emissiveIntensity: isTop ? 0.8 : 0.35,
-            roughness: 0.15,
-            metalness: 0.85,
-          });
-          const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-          floorMesh.position.y = 0.4 + f * floorHeight + floorHeight / 2;
-          floorMesh.castShadow = true;
-          floorMesh.receiveShadow = true;
-          buildingGroup.add(floorMesh);
-        }
-      }
-
-      // Add Construction Crane on Top of Construction Buildings!
+      // Add Construction Crane on Top of Active Construction Buildings!
       if (isConstructionSite) {
         const crane = createConstructionCrane();
         crane.position.set(0, 0.4 + totalHeight, 0);
@@ -366,21 +469,21 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         buildingGroup.add(crane);
         cranesRef.current.push(crane);
       } else {
-        // Rooftop Helipad & Spire for Finished Glass Skyscrapers
+        // Rooftop Spire Light
         const spireGeo = new THREE.CylinderGeometry(0.04, 0.16, 1.4, 8);
         const spireMat = new THREE.MeshBasicMaterial({ color: buildingColorHex });
         const spireMesh = new THREE.Mesh(spireGeo, spireMat);
         spireMesh.position.y = 0.4 + totalHeight + 0.7;
         buildingGroup.add(spireMesh);
 
-        const beaconGeo = new THREE.SphereGeometry(0.2, 8, 8);
+        const beaconGeo = new THREE.SphereGeometry(0.18, 8, 8);
         const beaconMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
         beaconMesh.position.y = 0.4 + totalHeight + 1.4;
         buildingGroup.add(beaconMesh);
       }
 
-      // Floating 3D Building Project Name Banner / Sprite Above Building
+      // Floating 3D Building Project Name Banner Above Building
       const labelText = proj.title;
       const statusBadge = isConstructionSite 
         ? `🚧 CONSTRUCTION • ${proj.commitsCount} COMMITS` 
@@ -405,10 +508,10 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     // 8. Animated 3D City Vehicles / Traffic Flow on Circular Highway
     vehiclesRef.current = [];
-    const carColors = [0x38bdf8, 0xef4444, 0x10b981, 0xf59e0b, 0xa855f7, 0xf8fafc];
+    const carColors = ['38bdf8', 'ef4444', '10b981', 'f59e0b', 'a855f7', 'f8fafc'];
     for (let c = 0; c < 8; c++) {
       const carColor = carColors[c % carColors.length];
-      const carMesh = createVehicle(carColor.toString(16));
+      const carMesh = createVehicle(carColor);
       const angle = (c / 8) * Math.PI * 2;
       const radius = 14; // Driving along the highway ring
 
@@ -591,7 +694,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     playSound('click');
     if (!cameraRef.current) return;
     if (preset === 'overview') {
-      cameraRef.current.position.set(32, 26, 38);
+      cameraRef.current.position.set(34, 28, 40);
     } else if (preset === 'street') {
       cameraRef.current.position.set(16, 6, 20);
     } else if (preset === 'drone') {
@@ -643,10 +746,10 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       <div className="absolute bottom-3 left-3 z-10 p-2.5 rounded-xl glass-panel border border-slate-700/60 text-xs font-mono-code pointer-events-auto hidden sm:block">
         <div className="flex items-center gap-2 text-sky-400 font-bold mb-1">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          3D LIVING CONSTRUCTION METROPOLIS
+          3D ARCHITECTURAL CONSTRUCTION CITY
         </div>
         <p className="text-slate-400 text-[10px]">
-          • Interactive 3D Cranes, Floating Titles & Vehicles
+          • 5 Architectural Styles • Glass, Stepped & Lattice Skyscrapers
         </p>
         <p className="text-slate-400 text-[10px]">
           • Inspect: Click any 3D Building
