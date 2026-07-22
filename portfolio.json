@@ -1,0 +1,10 @@
+{
+  "title": "My New Super App",
+  "subtitle": "Full Stack MERN Application",
+  "category": "Full Stack",
+  "description": "High performance 3D responsive full stack application built with React, Node.js, Express, and MongoDB Atlas.",
+  "techStack": ["React", "Node.js", "Express", "MongoDB", "TailwindCSS", "Three.js"],
+  "liveUrl": "https://my-app.vercel.app",
+  "buildingColor": "#ec4899",
+  "featured": true
+}
