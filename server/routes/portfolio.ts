@@ -13,6 +13,89 @@ import { initialPortfolioData } from '../../src/data/initialData';
 
 const router = Router();
 
+// Helper to color code building based on language
+function getBuildingColor(language?: string | null): string {
+  if (!language) return '#38bdf8';
+  const lang = language.toLowerCase();
+  if (lang.includes('script') || lang.includes('js') || lang.includes('ts')) return '#38bdf8';
+  if (lang.includes('react') || lang.includes('html') || lang.includes('css')) return '#a855f7';
+  if (lang.includes('node') || lang.includes('python')) return '#10b981';
+  if (lang.includes('ui') || lang.includes('figma')) return '#f59e0b';
+  return '#ec4899';
+}
+
+// Live GitHub Sync Handler Function
+export async function syncGitHubRepositories(username: string = 'prottoybiswas01') {
+  try {
+    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=30`, {
+      headers: {
+        'User-Agent': 'Prottoy-Portfolio-3D-App'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API returned status ${response.status}`);
+    }
+
+    const repos: any[] = await response.json();
+    if (!Array.isArray(repos)) return [];
+
+    const syncedProjects = [];
+
+    for (const repo of repos) {
+      // Estimate commits count from repository size / updates
+      const estimatedCommits = Math.max(8, Math.min(60, Math.floor(repo.size / 100) + 12));
+      const techStack = [repo.language || 'JavaScript', 'Git', 'GitHub'];
+      if (repo.name.toLowerCase().includes('react')) techStack.unshift('React');
+      if (repo.name.toLowerCase().includes('node') || repo.name.toLowerCase().includes('express')) techStack.unshift('Node.js');
+
+      const projData = {
+        id: `gh-${repo.id}`,
+        title: repo.name.replace(/-/g, ' ').replace(/_/g, ' '),
+        subtitle: `Live GitHub Repository (${repo.language || 'Web'})`,
+        description: repo.description || `Public GitHub repository ${repo.full_name}. Updated on ${new Date(repo.updated_at).toLocaleDateString()}.`,
+        category: (repo.language === 'TypeScript' || repo.language === 'JavaScript' ? 'Full Stack' : 'Frontend') as any,
+        techStack,
+        githubUrl: repo.html_url,
+        liveUrl: repo.homepage || repo.html_url,
+        imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+        commitsCount: estimatedCommits,
+        buildingColor: getBuildingColor(repo.language),
+        featured: repo.stargazers_count > 0 || repo.name.toLowerCase().includes('react'),
+        createdAt: repo.created_at ? repo.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+      };
+
+      // Upsert into MongoDB
+      const updated = await ProjectModel.findOneAndUpdate(
+        { id: projData.id },
+        projData,
+        { upsert: true, new: true }
+      );
+      syncedProjects.push(updated);
+    }
+
+    return syncedProjects;
+  } catch (err) {
+    console.error('Failed to sync live GitHub repositories:', err);
+    return [];
+  }
+}
+
+// GET /api/github/sync -> Fetch & Sync Live Repos from GitHub API to MongoDB
+router.get('/github/sync', async (req, res) => {
+  try {
+    const repos = await syncGitHubRepositories();
+    const allProjects = await ProjectModel.find().sort({ createdAt: -1 }).lean();
+    res.json({
+      success: true,
+      message: `Successfully synced ${repos.length} live repositories from github.com/prottoybiswas01`,
+      projects: allProjects
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to sync with GitHub API' });
+  }
+});
+
 // GET /api/portfolio -> fetch entire portfolio state from MongoDB
 router.get('/portfolio', async (req, res) => {
   try {

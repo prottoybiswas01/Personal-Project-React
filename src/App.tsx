@@ -3,7 +3,8 @@ import type { PortfolioData, Project, ContactMessage } from './types/portfolio';
 import { 
   getStoredPortfolioData, 
   saveStoredPortfolioData, 
-  resetPortfolioData
+  resetPortfolioData,
+  playSound
 } from './utils/storage';
 import { 
   fetchPortfolioData, 
@@ -12,7 +13,8 @@ import {
   pushCommitToDB, 
   saveCityConfigToDB, 
   sendMessageToDB, 
-  resetDBToDefaults 
+  resetDBToDefaults,
+  syncGitHubRepositoriesWithDB
 } from './services/api';
 
 import { Navbar } from './components/layout/Navbar';
@@ -27,10 +29,13 @@ import { Footer } from './components/layout/Footer';
 import { BuildingInspectorModal } from './components/3d/BuildingInspectorModal';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import confetti from 'canvas-confetti';
 
 export function App() {
   const [portfolioData, setPortfolioData] = useState<PortfolioData>(getStoredPortfolioData);
   const [isMongoConnected, setIsMongoConnected] = useState<boolean>(false);
+  const [isSyncingGitHub, setIsSyncingGitHub] = useState<boolean>(false);
+  const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string>('hero');
 
   // Selected 3D Building Modal State
@@ -70,6 +75,38 @@ export function App() {
   const updatePortfolioData = async (newData: PortfolioData) => {
     setPortfolioData(newData);
     saveStoredPortfolioData(newData);
+  };
+
+  // Live GitHub Auto Sync Action
+  const handleSyncGitHub = async () => {
+    setIsSyncingGitHub(true);
+    playSound('commit');
+
+    const res = await syncGitHubRepositoriesWithDB();
+    setIsSyncingGitHub(false);
+
+    if (res.success && res.projects) {
+      const updated = {
+        ...portfolioData,
+        projects: res.projects
+      };
+      setPortfolioData(updated);
+      saveStoredPortfolioData(updated);
+
+      playSound('admin');
+      confetti({
+        particleCount: 80,
+        spread: 80,
+        origin: { y: 0.5 }
+      });
+
+      setSyncStatusMsg(res.message || 'Live synced with GitHub repositories!');
+      setTimeout(() => setSyncStatusMsg(null), 5000);
+    } else {
+      playSound('error');
+      setSyncStatusMsg(res.message || 'Could not sync with GitHub');
+      setTimeout(() => setSyncStatusMsg(null), 5000);
+    }
   };
 
   const handleSaveAllFromAdmin = async (newData: PortfolioData) => {
@@ -155,13 +192,21 @@ export function App() {
         }}
         activeSection={activeSection}
         onNavigate={handleNavigate}
+        onSyncGitHub={handleSyncGitHub}
+        isSyncingGitHub={isSyncingGitHub}
       />
 
-      {/* MongoDB Atlas Connectivity Banner */}
-      {isMongoConnected && (
-        <div className="bg-emerald-500/10 border-b border-emerald-500/30 px-4 py-1.5 text-center text-xs font-mono-code text-emerald-400 flex items-center justify-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span>MongoDB Atlas Connected • Live Persistence Active (Cluster0)</span>
+      {/* MongoDB Atlas & Sync Notification Banner */}
+      {(isMongoConnected || syncStatusMsg) && (
+        <div className="bg-slate-900/90 border-b border-sky-500/30 px-4 py-2 text-center text-xs font-mono-code text-sky-300 flex flex-wrap items-center justify-center gap-2">
+          {syncStatusMsg ? (
+            <span className="text-emerald-400 font-bold">✨ {syncStatusMsg}</span>
+          ) : (
+            <>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>MongoDB Atlas Connected • Live Persistence Active (Cluster0)</span>
+            </>
+          )}
         </div>
       )}
 
@@ -183,12 +228,16 @@ export function App() {
           }}
           onSelectProject={(proj) => setSelectedProject(proj)}
           onOpenAdmin={() => setIsAdminLoginOpen(true)}
+          onSyncGitHub={handleSyncGitHub}
+          isSyncingGitHub={isSyncingGitHub}
         />
 
         {/* Filterable Projects Section */}
         <ProjectsSection
           projects={portfolioData.projects}
           onSelectProject={(proj) => setSelectedProject(proj)}
+          onSyncGitHub={handleSyncGitHub}
+          isSyncingGitHub={isSyncingGitHub}
         />
 
         {/* 3D Interactive Skills Matrix */}
@@ -245,6 +294,8 @@ export function App() {
           handleResetData();
           setIsAdminLoggedIn(false);
         }}
+        onSyncGitHub={handleSyncGitHub}
+        isSyncingGitHub={isSyncingGitHub}
       />
 
     </div>

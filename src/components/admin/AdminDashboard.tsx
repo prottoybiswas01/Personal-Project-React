@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { PortfolioData, Project, CityConfig } from '../../types/portfolio';
 import { 
   Shield, X, Save, Plus, Trash2, Edit, Layers, User, 
-  Sparkles, Film, Inbox, Download, Upload, RotateCcw
+  Sparkles, Film, Inbox, Download, Upload, RotateCcw, RefreshCw
 } from 'lucide-react';
 import { playSound } from '../../utils/storage';
 
@@ -12,6 +12,8 @@ interface AdminDashboardProps {
   data: PortfolioData;
   onSaveData: (newData: PortfolioData) => void;
   onResetData: () => void;
+  onSyncGitHub?: () => void;
+  isSyncingGitHub?: boolean;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -19,7 +21,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onClose,
   data,
   onSaveData,
-  onResetData
+  onResetData,
+  onSyncGitHub,
+  isSyncingGitHub = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'projects' | 'city' | 'hobbies' | 'messages' | 'backup'>('projects');
   
@@ -156,7 +160,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col glass-panel border border-purple-500/40 rounded-3xl shadow-2xl overflow-hidden text-slate-100">
         
         {/* Admin Header */}
-        <div className="p-4 sm:p-6 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-4 sm:p-6 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/40 glow-purple">
               <Shield className="w-6 h-6" />
@@ -173,6 +177,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {onSyncGitHub && (
+              <button
+                onClick={() => {
+                  playSound('click');
+                  onSyncGitHub();
+                }}
+                disabled={isSyncingGitHub}
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30 font-mono-code text-xs font-bold flex items-center gap-1.5"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
+                <span>{isSyncingGitHub ? 'Syncing...' : 'Sync GitHub Repos'}</span>
+              </button>
+            )}
+
             <button
               onClick={handleSaveAll}
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-white font-mono-code text-xs font-bold flex items-center gap-1.5 shadow-lg glow-cyan transition-all"
@@ -288,23 +306,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {activeTab === 'projects' && (
               <div className="space-y-6">
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-heading font-bold text-white">Project Skyscrapers & Git Activity</h3>
-                    <p className="text-xs text-slate-400 font-mono-code">Add or modify projects. Increasing commit count adds 3D building floors!</p>
+                    <p className="text-xs text-slate-400 font-mono-code">Add or modify projects. Syncing with GitHub fetches live repositories from github.com/prottoybiswas01!</p>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      playSound('click');
-                      setEditingProject(null);
-                      setIsAddingProject(true);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs font-mono-code font-bold flex items-center gap-1.5"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Create New Project</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {onSyncGitHub && (
+                      <button
+                        onClick={() => {
+                          playSound('click');
+                          onSyncGitHub();
+                        }}
+                        disabled={isSyncingGitHub}
+                        className="px-3.5 py-2 rounded-xl bg-slate-900 text-sky-400 border border-sky-500/30 text-xs font-mono-code font-bold flex items-center gap-1.5"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
+                        <span>{isSyncingGitHub ? 'Syncing GitHub...' : 'Live GitHub Auto-Sync'}</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        playSound('click');
+                        setEditingProject(null);
+                        setIsAddingProject(true);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs font-mono-code font-bold flex items-center gap-1.5"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Create Custom Project</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Add / Edit Project Modal Form */}
@@ -585,7 +619,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 pt-2">
+                <div className="flex items-center gap-6 pt-2 flex-wrap">
                   <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
                     <input
                       type="checkbox"

@@ -16,6 +16,19 @@ export async function fetchPortfolioData(): Promise<{ data: PortfolioData; isMon
   return { data: initialPortfolioData, isMongoConnected: false };
 }
 
+export async function syncGitHubRepositoriesWithDB(): Promise<{ success: boolean; projects?: Project[]; message?: string }> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/github/sync`);
+    if (res.ok) {
+      const result = await res.json();
+      return { success: true, projects: result.projects, message: result.message };
+    }
+  } catch (err) {
+    console.error('Error syncing with GitHub:', err);
+  }
+  return { success: false, message: 'Could not connect to GitHub API' };
+}
+
 export async function saveProfileToDB(profile: ProfileInfo): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE_URL}/portfolio/profile`, {

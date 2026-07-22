@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { Volume2, VolumeX, Shield, Box, Menu, X } from 'lucide-react';
+import { Volume2, VolumeX, Shield, Box, Menu, X, RefreshCw } from 'lucide-react';
 import { isAudioMuted, toggleAudioMute, playSound } from '../../utils/storage';
 
 interface NavbarProps {
   onOpenAdmin: () => void;
   activeSection: string;
   onNavigate: (sectionId: string) => void;
+  onSyncGitHub: () => void;
+  isSyncingGitHub?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenAdmin,
   activeSection,
-  onNavigate
+  onNavigate,
+  onSyncGitHub,
+  isSyncingGitHub = false,
 }) => {
   const [muted, setMuted] = useState(isAudioMuted());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,17 +27,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const navItems = [
-    { id: 'hero', label: '3D City World', icon: '🌐' },
+    { id: 'hero', label: '3D City', icon: '🌐' },
     { id: 'projects', label: 'Projects', icon: '🚀' },
     { id: 'skills', label: 'Tech Stack', icon: '🛠' },
-    { id: 'about', label: 'About Me', icon: '👨‍💻' },
+    { id: 'about', label: 'About', icon: '👨‍💻' },
     { id: 'hobbies', label: 'Hobbies & Movies', icon: '🎨' },
     { id: 'contact', label: 'Contact', icon: '✉️' },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-slate-950/80 border-b border-sky-500/20 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-slate-950/90 border-b border-sky-500/20 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
         
         {/* Brand Logo */}
         <div 
@@ -41,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             playSound('click');
             onNavigate('hero');
           }}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-2.5 cursor-pointer group shrink-0"
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-purple-600 p-0.5 glow-cyan transition-transform group-hover:scale-105">
             <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center text-sky-400">
@@ -49,22 +53,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-heading font-extrabold text-lg text-white tracking-wide">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-heading font-black text-base sm:text-lg text-white tracking-wide">
                 PROTTOY BISWAS
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-mono-code rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                3D PORTFOLIO
+              <span className="px-1.5 py-0.5 text-[9px] font-mono-code rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                3D CITY
               </span>
             </div>
-            <span className="text-[11px] font-mono-code text-slate-400 block -mt-0.5">
+            <span className="text-[10px] sm:text-[11px] font-mono-code text-slate-400 block -mt-0.5 truncate max-w-[200px] sm:max-w-none">
               MERN Stack Developer & UI/UX Designer
             </span>
           </div>
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1.5 glass-panel px-3 py-1.5 rounded-2xl border border-slate-800">
+        <nav className="hidden lg:flex items-center gap-1 glass-panel px-3 py-1.5 rounded-2xl border border-slate-800">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -72,9 +76,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 playSound('click');
                 onNavigate(item.id);
               }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono-code transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono-code transition-all flex items-center gap-1.5 ${
                 activeSection === item.id
-                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 glow-cyan'
+                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 glow-cyan font-bold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
               }`}
             >
@@ -84,8 +88,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           ))}
         </nav>
 
-        {/* Right Header Controls: Audio Toggle & Admin Button */}
-        <div className="hidden sm:flex items-center gap-3">
+        {/* Right Header Controls */}
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
+          
+          {/* Live GitHub Auto-Sync Button */}
+          <button
+            onClick={() => {
+              playSound('click');
+              onSyncGitHub();
+            }}
+            disabled={isSyncingGitHub}
+            title="Live Sync with GitHub account (prottoybiswas01)"
+            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 border border-sky-500/30 text-xs font-mono-code font-semibold flex items-center gap-1.5 transition-all shadow"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
+            <span className="hidden md:inline">{isSyncingGitHub ? 'SYNCING GITHUB...' : 'LIVE GITHUB SYNC'}</span>
+          </button>
+
           {/* Audio Synthesizer Toggle */}
           <button
             onClick={handleMuteToggle}
@@ -96,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'bg-sky-500/20 text-sky-300 border-sky-500/40 glow-cyan'
             }`}
           >
-            {muted ? <VolumeX className="w-4.5 h-4.5" /> : <Volume2 className="w-4.5 h-4.5 animate-pulse" />}
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 animate-pulse" />}
           </button>
 
           {/* Admin Panel Launch Button */}
@@ -105,15 +124,26 @@ export const Navbar: React.FC<NavbarProps> = ({
               playSound('admin');
               onOpenAdmin();
             }}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-500 hover:from-purple-500 hover:to-sky-400 text-white font-mono-code text-xs font-bold flex items-center gap-2 shadow-lg glow-purple transition-all border border-purple-400/30"
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-500 hover:from-purple-500 hover:to-sky-400 text-white font-mono-code text-xs font-bold flex items-center gap-1.5 shadow-lg glow-purple transition-all border border-purple-400/30"
           >
             <Shield className="w-4 h-4 text-sky-300" />
-            <span>ADMIN PANEL (/admin)</span>
+            <span>ADMIN (/admin)</span>
           </button>
         </div>
 
-        {/* Mobile Menu Button */}
-        <div className="flex items-center gap-2 lg:hidden">
+        {/* Mobile Menu Controls */}
+        <div className="flex items-center gap-1.5 sm:hidden">
+          <button
+            onClick={() => {
+              playSound('click');
+              onSyncGitHub();
+            }}
+            disabled={isSyncingGitHub}
+            className="p-2 rounded-lg bg-slate-900 text-sky-400 border border-slate-800"
+            title="Live Sync GitHub"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
+          </button>
           <button
             onClick={handleMuteToggle}
             className="p-2 rounded-lg bg-slate-900 text-slate-300 border border-slate-800"
@@ -124,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg bg-slate-900 text-slate-300 border border-slate-800"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
@@ -151,7 +181,21 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>{item.label}</span>
             </button>
           ))}
-          <div className="pt-2 border-t border-slate-800">
+
+          <div className="pt-2 border-t border-slate-800 space-y-2">
+            <button
+              onClick={() => {
+                playSound('click');
+                onSyncGitHub();
+                setMobileMenuOpen(false);
+              }}
+              disabled={isSyncingGitHub}
+              className="w-full py-2.5 rounded-xl bg-slate-900 text-sky-400 border border-sky-500/30 font-mono-code text-xs font-bold flex items-center justify-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : ''}`} />
+              <span>LIVE GITHUB SYNC (prottoybiswas01)</span>
+            </button>
+
             <button
               onClick={() => {
                 playSound('admin');

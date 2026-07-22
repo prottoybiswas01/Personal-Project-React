@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import type { Project } from '../../types/portfolio';
-import { Layers, GitCommit, ExternalLink, Box, Code } from 'lucide-react';
+import { Layers, GitCommit, ExternalLink, Box, Code, RefreshCw } from 'lucide-react';
 import { playSound } from '../../utils/storage';
 
 interface ProjectsSectionProps {
   projects: Project[];
   onSelectProject: (project: Project) => void;
+  onSyncGitHub: () => void;
+  isSyncingGitHub?: boolean;
 }
 
 export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   projects,
   onSelectProject,
+  onSyncGitHub,
+  isSyncingGitHub = false,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
@@ -21,24 +25,40 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
     : projects.filter(p => p.category === selectedCategory);
 
   return (
-    <section id="projects" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <section id="projects" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       
       {/* Header */}
-      <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
+      <div className="text-center max-w-3xl mx-auto space-y-4 mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-xs font-mono-code text-sky-400">
           <Box className="w-3.5 h-3.5" />
           <span>3D SKYSCRAPER PROJECT CATALOG</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-heading font-extrabold text-white">
-          Featured Web <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-purple-500">Applications & Systems</span>
+        
+        <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-white">
+          Featured Web <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-purple-500">Applications & Repositories</span>
         </h2>
-        <p className="text-slate-400 text-sm font-sans">
-          Each project is dynamically modeled as a 3D skyscraper in our interactive GitHub city. Commit activity controls building floor heights!
+        
+        <p className="text-slate-400 text-xs sm:text-sm font-sans leading-relaxed">
+          Each project is dynamically modeled as a 3D skyscraper in our interactive GitHub city. Uploading or pushing code to GitHub updates your 3D city buildings!
         </p>
+
+        <div className="pt-2 flex justify-center">
+          <button
+            onClick={() => {
+              playSound('click');
+              onSyncGitHub();
+            }}
+            disabled={isSyncingGitHub}
+            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-500/40 text-xs font-mono-code font-bold flex items-center gap-2 shadow-lg glow-cyan transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSyncingGitHub ? 'animate-spin text-emerald-400' : 'text-sky-400'}`} />
+            <span>{isSyncingGitHub ? 'SYNCING LIVE REPOS...' : 'REFRESH & SYNC GITHUB REPOSITORIES'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Category Filter Pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
         {categories.map((cat) => (
           <button
             key={cat}
@@ -46,7 +66,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
               playSound('click');
               setSelectedCategory(cat);
             }}
-            className={`px-5 py-2.5 rounded-xl text-xs font-mono-code transition-all border ${
+            className={`px-4 py-2 rounded-xl text-xs font-mono-code transition-all border ${
               selectedCategory === cat
                 ? 'bg-sky-500/20 text-sky-300 border-sky-400 glow-cyan font-bold'
                 : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
@@ -58,7 +78,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         {filteredProjects.map((project) => {
           const floors = Math.max(3, Math.floor(project.commitsCount / 2));
           return (
@@ -68,7 +88,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
             >
               <div>
                 {/* Image & Badges */}
-                <div className="relative h-48 w-full overflow-hidden bg-slate-950">
+                <div className="relative h-44 sm:h-48 w-full overflow-hidden bg-slate-950">
                   {project.imageUrl ? (
                     <img
                       src={project.imageUrl}
@@ -84,29 +104,29 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
 
                   {/* Top Badges */}
-                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-                    <span className="px-2.5 py-1 rounded-md text-[10px] font-mono-code bg-slate-950/90 text-sky-300 border border-sky-500/30">
+                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none gap-1">
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-mono-code bg-slate-950/90 text-sky-300 border border-sky-500/30 truncate">
                       {project.category}
                     </span>
-                    <span className="px-2.5 py-1 rounded-md text-[10px] font-mono-code bg-purple-950/90 text-purple-300 border border-purple-500/40 flex items-center gap-1">
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-mono-code bg-purple-950/90 text-purple-300 border border-purple-500/40 flex items-center gap-1 shrink-0">
                       <Layers className="w-3 h-3 text-purple-400" />
                       {floors} Floors
                     </span>
                   </div>
 
                   {/* Bottom Commit Badge */}
-                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[11px] font-mono-code text-emerald-400 bg-slate-950/80 px-2.5 py-1 rounded-md border border-emerald-500/30">
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono-code text-emerald-400 bg-slate-950/80 px-2.5 py-1 rounded-md border border-emerald-500/30">
                     <GitCommit className="w-3.5 h-3.5" />
                     <span>{project.commitsCount} Commits</span>
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-3">
-                  <h3 className="text-xl font-heading font-bold text-white group-hover:text-sky-300 transition-colors">
+                <div className="p-5 sm:p-6 space-y-2.5">
+                  <h3 className="text-lg sm:text-xl font-heading font-bold text-white group-hover:text-sky-300 transition-colors break-words">
                     {project.title}
                   </h3>
-                  <p className="text-xs text-sky-400 font-mono-code">{project.subtitle}</p>
+                  <p className="text-xs text-sky-400 font-mono-code truncate">{project.subtitle}</p>
                   <p className="text-slate-400 text-xs leading-relaxed line-clamp-3 font-sans">
                     {project.description}
                   </p>
@@ -126,16 +146,16 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
               </div>
 
               {/* Card Footer Actions */}
-              <div className="p-6 pt-0 border-t border-slate-900/60 mt-4 flex items-center gap-2">
+              <div className="p-5 sm:p-6 pt-0 border-t border-slate-900/60 mt-4 flex items-center gap-2">
                 <button
                   onClick={() => {
                     playSound('click');
                     onSelectProject(project);
                   }}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-mono-code font-bold flex items-center justify-center gap-1.5 transition-all"
+                  className="flex-1 py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-mono-code font-bold flex items-center justify-center gap-1.5 transition-all"
                 >
-                  <Box className="w-4 h-4" />
-                  <span>Inspect 3D Building</span>
+                  <Box className="w-3.5 h-3.5" />
+                  <span>Inspect 3D Skyscraper</span>
                 </button>
 
                 <a
@@ -143,7 +163,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => playSound('click')}
-                  className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all"
+                  className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all shrink-0"
                   title="View GitHub Source"
                 >
                   <GitCommit className="w-4 h-4" />
@@ -155,7 +175,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => playSound('click')}
-                    className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 hover:text-sky-300 border border-slate-800 transition-all"
+                    className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 hover:text-sky-300 border border-slate-800 transition-all shrink-0"
                     title="Launch Live Demo"
                   >
                     <ExternalLink className="w-4 h-4" />
