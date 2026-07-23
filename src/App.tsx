@@ -26,7 +26,6 @@ import { ContactSection } from './components/sections/ContactSection';
 import { Footer } from './components/layout/Footer';
 
 import { BuildingInspectorModal } from './components/3d/BuildingInspectorModal';
-import { AllProjectsModal } from './components/sections/AllProjectsModal';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import confetti from 'canvas-confetti';
@@ -40,9 +39,6 @@ export function App() {
 
   // Selected 3D Building Modal State
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-
-  // All 48 Projects Directory Modal State
-  const [isAllProjectsModalOpen, setIsAllProjectsModalOpen] = useState<boolean>(false);
 
   // Admin Auth & Dashboard Modal State
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState<boolean>(false);
@@ -222,7 +218,6 @@ export function App() {
           onSelectProject={(proj) => setSelectedProject(proj)}
           onSyncGitHub={handleSyncGitHub}
           isSyncingGitHub={isSyncingGitHub}
-          onOpenAllProjectsModal={() => setIsAllProjectsModalOpen(true)}
         />
 
         {/* 3D Interactive Skills Matrix */}
@@ -254,16 +249,6 @@ export function App() {
       <BuildingInspectorModal
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
-      />
-
-      {/* All 48 Repositories Directory Modal */}
-      <AllProjectsModal
-        isOpen={isAllProjectsModalOpen}
-        onClose={() => setIsAllProjectsModalOpen(false)}
-        projects={portfolioData.projects}
-        onSelectProject={(proj) => setSelectedProject(proj)}
-        onSyncGitHub={handleSyncGitHub}
-        isSyncingGitHub={isSyncingGitHub}
       />
 
       {/* Admin Auth Login Modal */}
