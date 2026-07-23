@@ -25,8 +25,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
   const [hoveredProjId, setHoveredProjId] = useState<string | null>(null);
 
-  const totalCommits = projects.reduce((sum, p) => sum + p.commitsCount, 0);
-  const totalFloors = projects.reduce((sum, p) => sum + Math.max(3, Math.floor(p.commitsCount / 2)), 0);
+  const computedCommits = projects.reduce((sum, p) => sum + p.commitsCount, 0);
+  const computedFloors = projects.reduce((sum, p) => sum + Math.max(3, Math.floor(p.commitsCount / 2)), 0);
+
+  const displayBuildings = (profile.totalBuildingsOverride && profile.totalBuildingsOverride > 0)
+    ? profile.totalBuildingsOverride
+    : projects.length;
+
+  const displayCommits = (profile.totalCommitsOverride && profile.totalCommitsOverride > 0)
+    ? profile.totalCommitsOverride
+    : computedCommits;
+
+  const displayFloors = (profile.totalFloorsOverride && profile.totalFloorsOverride > 0)
+    ? profile.totalFloorsOverride
+    : computedFloors;
 
   const themes: CityConfig['theme'][] = ['cyberpunk', 'matrix', 'sunset', 'diamond', 'neon-blue'];
 
@@ -89,18 +101,32 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {profile.bio}
           </p>
 
-          {/* Live Stats counters */}
+          {/* Live Interactive Stats counters */}
           <div className="grid grid-cols-3 gap-2 pt-1">
-            <div className="p-2.5 rounded-xl glass-panel border border-slate-800 text-center">
-              <div className="text-xl font-bold font-mono-code text-sky-400">{projects.length}</div>
+            <div 
+              onClick={() => playSound('commit')}
+              className="p-2.5 rounded-xl glass-panel border border-slate-800 hover:border-sky-500/50 text-center cursor-pointer transition-all duration-300 group hover:scale-[1.02]"
+              title="Total 3D Skyscraper Buildings (Managed live from GitHub & Admin Panel)"
+            >
+              <div className="text-xl sm:text-2xl font-bold font-mono-code text-sky-400 group-hover:text-sky-300">{displayBuildings}</div>
               <div className="text-[10px] text-slate-400 font-mono-code truncate">3D Buildings</div>
             </div>
-            <div className="p-2.5 rounded-xl glass-panel border border-slate-800 text-center">
-              <div className="text-xl font-bold font-mono-code text-purple-400">{totalCommits}</div>
+
+            <div 
+              onClick={() => playSound('commit')}
+              className="p-2.5 rounded-xl glass-panel border border-slate-800 hover:border-purple-500/50 text-center cursor-pointer transition-all duration-300 group hover:scale-[1.02]"
+              title="Total Git Commits Tracked (Live tracked & customizable in Admin)"
+            >
+              <div className="text-xl sm:text-2xl font-bold font-mono-code text-purple-400 group-hover:text-purple-300">{displayCommits}</div>
               <div className="text-[10px] text-slate-400 font-mono-code truncate">Git Commits</div>
             </div>
-            <div className="p-2.5 rounded-xl glass-panel border border-slate-800 text-center">
-              <div className="text-xl font-bold font-mono-code text-emerald-400">{totalFloors}</div>
+
+            <div 
+              onClick={() => playSound('commit')}
+              className="p-2.5 rounded-xl glass-panel border border-slate-800 hover:border-emerald-500/50 text-center cursor-pointer transition-all duration-300 group hover:scale-[1.02]"
+              title="Total Architectural 3D Floors Stacked"
+            >
+              <div className="text-xl sm:text-2xl font-bold font-mono-code text-emerald-400 group-hover:text-emerald-300">{displayFloors}</div>
               <div className="text-[10px] text-slate-400 font-mono-code truncate">Floors Stacked</div>
             </div>
           </div>

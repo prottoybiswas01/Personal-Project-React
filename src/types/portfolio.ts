@@ -53,6 +53,9 @@ export interface ProfileInfo {
   focusArea: string;
   learningGoals: string[];
   yearsExperience: number;
+  totalCommitsOverride?: number;
+  totalFloorsOverride?: number;
+  totalBuildingsOverride?: number;
 }
 
 export interface CityConfig {

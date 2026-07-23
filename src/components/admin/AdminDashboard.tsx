@@ -488,14 +488,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleQuickAddCommit(proj.id, 10)}
+                          className="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] flex items-center gap-0.5"
+                          title="Add 10 commits & floors"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>+10</span>
+                        </button>
+
                         <button
                           onClick={() => handleQuickAddCommit(proj.id, 5)}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs flex items-center gap-1"
-                          title="Add 5 commits / grow floors"
+                          className="px-2 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-[11px] flex items-center gap-0.5"
+                          title="Add 5 commits & floors"
                         >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>+5 Commits</span>
+                          <Plus className="w-3 h-3" />
+                          <span>+5</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleQuickAddCommit(proj.id, -5)}
+                          className="px-2 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30 text-[11px] flex items-center gap-0.5"
+                          title="Remove 5 commits"
+                        >
+                          <span>-5</span>
                         </button>
 
                         <button
@@ -581,6 +598,117 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 </div>
 
+                {/* Live Hero Stats Controls */}
+                <div className="p-4 rounded-2xl glass-panel border border-sky-500/40 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-sky-300 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-sky-400" />
+                        <span>Hero Section Live Stats Customizer</span>
+                      </h4>
+                      <p className="text-xs text-slate-400 font-sans mt-0.5">
+                        Manually override total Git Commits, 3D Buildings, or Floors count displayed on home page header!
+                      </p>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playSound('click');
+                        setFormData({
+                          ...formData,
+                          profile: {
+                            ...formData.profile,
+                            totalCommitsOverride: undefined,
+                            totalFloorsOverride: undefined,
+                            totalBuildingsOverride: undefined
+                          }
+                        });
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-[11px]"
+                    >
+                      Reset to Auto-Calculated
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs text-slate-300 mb-1">
+                        Total Git Commits (Currently: {formData.projects.reduce((sum, p) => sum + p.commitsCount, 0)})
+                      </label>
+                      <div className="flex gap-1.5">
+                        <input
+                          type="number"
+                          placeholder="Auto (727)"
+                          value={formData.profile.totalCommitsOverride ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                            setFormData({ ...formData, profile: { ...formData.profile, totalCommitsOverride: val } });
+                          }}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-purple-300 font-bold"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playSound('commit');
+                            const current = formData.profile.totalCommitsOverride || formData.projects.reduce((sum, p) => sum + p.commitsCount, 0);
+                            setFormData({ ...formData, profile: { ...formData.profile, totalCommitsOverride: current + 50 } });
+                          }}
+                          className="px-2.5 py-1 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-bold shrink-0"
+                          title="Add +50 commits"
+                        >
+                          +50
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-slate-300 mb-1">
+                        Floors Stacked (Currently: {formData.projects.reduce((sum, p) => sum + Math.max(3, Math.floor(p.commitsCount / 2)), 0)})
+                      </label>
+                      <div className="flex gap-1.5">
+                        <input
+                          type="number"
+                          placeholder="Auto (386)"
+                          value={formData.profile.totalFloorsOverride ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                            setFormData({ ...formData, profile: { ...formData.profile, totalFloorsOverride: val } });
+                          }}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-emerald-300 font-bold"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playSound('commit');
+                            const current = formData.profile.totalFloorsOverride || formData.projects.reduce((sum, p) => sum + Math.max(3, Math.floor(p.commitsCount / 2)), 0);
+                            setFormData({ ...formData, profile: { ...formData.profile, totalFloorsOverride: current + 25 } });
+                          }}
+                          className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold shrink-0"
+                          title="Add +25 floors"
+                        >
+                          +25
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-slate-300 mb-1">
+                        Total 3D Buildings (Currently: {formData.projects.length})
+                      </label>
+                      <input
+                        type="number"
+                        placeholder={`Auto (${formData.projects.length})`}
+                        value={formData.profile.totalBuildingsOverride ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                          setFormData({ ...formData, profile: { ...formData.profile, totalBuildingsOverride: val } });
+                        }}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-sky-300 font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
