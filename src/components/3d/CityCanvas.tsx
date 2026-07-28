@@ -477,9 +477,34 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     scene.fog = new THREE.FogExp2(currentTheme.sky, 0.0035);
     sceneRef.current = scene;
 
+    const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
+    const totalProjects = sortedProjects.length;
+
+    // Dynamically calculate grid columns and rows so EVERY project gets its own lot (NO OVERLAPPING!)
+    const numCols = Math.max(7, Math.ceil(Math.sqrt(totalProjects * 1.25)));
+    const numRows = Math.ceil(totalProjects / numCols);
+
+    const stepX = 12;
+    const stepZ = 12;
+
+    const startX = -((numCols - 1) * stepX) / 2;
+    const startZ = -((numRows - 1) * stepZ) / 2;
+
+    const lotCenterX = Array.from({ length: numCols }, (_, i) => startX + i * stepX);
+    const lotCenterZ = Array.from({ length: numRows }, (_, j) => startZ + j * stepZ);
+
+    // Road Grid Coordinates (framing lots)
+    const roadXCoords = Array.from({ length: numCols + 1 }, (_, i) => startX - stepX / 2 + i * stepX);
+    const roadZCoords = Array.from({ length: numRows + 1 }, (_, j) => startZ - stepZ / 2 + j * stepZ);
+
+    const totalGridWidth = numCols * stepX;
+    const totalGridDepth = numRows * stepZ;
+    const cityRadius = Math.max(85, Math.max(totalGridWidth, totalGridDepth) * 0.75);
+
     // 2. Camera Setup
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.8, 1400);
-    camera.position.set(54, 44, 62);
+    const initialCamDist = Math.max(65, Math.max(totalGridWidth, totalGridDepth) * 0.85);
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.8, 2500);
+    camera.position.set(initialCamDist * 0.85, initialCamDist * 0.7, initialCamDist * 0.95);
     camera.lookAt(0, 4, 0);
     cameraRef.current = camera;
 
@@ -509,7 +534,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     scene.add(fillLight);
 
     // 5. Expanded Green Lawn Ground Disc
-    const groundGeo = new THREE.CylinderGeometry(85, 88, 0.4, 64);
+    const groundGeo = new THREE.CylinderGeometry(cityRadius + 15, cityRadius + 18, 0.4, 64);
     const groundMat = new THREE.MeshStandardMaterial({
       color: currentTheme.grass,
       roughness: 0.6,
@@ -520,24 +545,18 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    // 🛣️ 6. ACCURATE NEIGHBORHOOD GRID STREET NETWORK (Roads frame the lots - ZERO building overlap!)
+    // 🛣️ 6. ACCURATE DYNAMIC NEIGHBORHOOD GRID STREET NETWORK (Roads frame the lots - ZERO building overlap!)
     const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
     const lineMat = new THREE.MeshBasicMaterial({ color: 0xf6e05e });
 
-    // Grid Coordinates along X & Z for 7 Columns × 5 Rows lot centers:
-    // Road Grid X lines: [-42, -30, -18, -6, 6, 18, 30, 42]
-    // Road Grid Z lines: [-30, -18, -6, 6, 18, 30]
-    const roadXCoords = [-42, -30, -18, -6, 6, 18, 30, 42];
-    const roadZCoords = [-30, -18, -6, 6, 18, 30];
-
     // East-West Streets
     roadZCoords.forEach((z) => {
-      const roadGeo = new THREE.BoxGeometry(90, 0.02, 2.6);
+      const roadGeo = new THREE.BoxGeometry(totalGridWidth + 12, 0.02, 2.6);
       const roadMesh = new THREE.Mesh(roadGeo, roadMat);
       roadMesh.position.set(0, 0.02, z);
       scene.add(roadMesh);
 
-      const lineGeo = new THREE.BoxGeometry(90, 0.03, 0.15);
+      const lineGeo = new THREE.BoxGeometry(totalGridWidth + 12, 0.03, 0.15);
       const lineMesh = new THREE.Mesh(lineGeo, lineMat);
       lineMesh.position.set(0, 0.03, z);
       scene.add(lineMesh);
@@ -545,37 +564,31 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
 
     // North-South Avenues
     roadXCoords.forEach((x) => {
-      const roadGeo = new THREE.BoxGeometry(2.6, 0.02, 70);
+      const roadGeo = new THREE.BoxGeometry(2.6, 0.02, totalGridDepth + 12);
       const roadMesh = new THREE.Mesh(roadGeo, roadMat);
       roadMesh.position.set(x, 0.02, 0);
       scene.add(roadMesh);
 
-      const lineGeo = new THREE.BoxGeometry(0.15, 0.03, 70);
+      const lineGeo = new THREE.BoxGeometry(0.15, 0.03, totalGridDepth + 12);
       const lineMesh = new THREE.Mesh(lineGeo, lineMat);
       lineMesh.position.set(x, 0.03, 0);
       scene.add(lineMesh);
     });
 
-    // 🏡 7. ACCURATE LOT CENTERS (Buildings sit 100% centered in lot blocks with 6-unit buffer to streets!)
-    // Lot Centers X: [-36, -24, -12, 0, 12, 24, 36] (7 Columns)
-    // Lot Centers Z: [-24, -12, 0, 12, 24] (5 Rows) -> 35 primary lots, wrapping nicely for 48!
-    const lotCenterX = [-36, -24, -12, 0, 12, 24, 36];
-    const lotCenterZ = [-24, -12, 0, 12, 24];
-
+    // 🏡 7. ACCURATE LOT CENTERS (Buildings sit 100% centered in lot blocks!)
     houseMeshesRef.current = [];
     craneArmsRef.current = [];
     commitPulsesRef.current = [];
     pedestriansRef.current = [];
 
-    const sortedProjects = [...projects].sort((a, b) => b.commitsCount - a.commitsCount);
     const pedestrianShirtColors = [0x38bdf8, 0xef4444, 0x10b981, 0xf59e0b, 0xa855f7, 0xec4899];
 
     sortedProjects.forEach((proj, idx) => {
-      const col = idx % 7;
-      const row = Math.floor(idx / 7);
+      const col = idx % numCols;
+      const row = Math.floor(idx / numCols);
 
       const x = lotCenterX[col];
-      const z = lotCenterZ[row % 5] + (row >= 5 ? 3 : 0);
+      const z = lotCenterZ[row];
 
       // Build Multi-Story Building (Height scales with commits!)
       const { buildingGroup, craneArm } = createMultiStoryBuilding(proj, idx);
@@ -670,11 +683,12 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       });
     });
 
-    // 🌳 OUTTER PERIMETER NATURAL FOREST BELT (48 Lush Trees surrounding the city)
+    // 🌳 OUTTER PERIMETER NATURAL FOREST BELT (Lush Trees surrounding the city)
     const forestTypes: ('oak' | 'pine' | 'sakura' | 'cypress' | 'flowering')[] = ['oak', 'pine', 'sakura', 'cypress', 'flowering'];
-    for (let i = 0; i < 48; i++) {
-      const angle = (i / 48) * Math.PI * 2;
-      const radius = 52 + (i % 3) * 6; // Rings between 52 and 64 radius
+    const forestCount = Math.max(48, Math.floor(totalProjects * 1.2));
+    for (let i = 0; i < forestCount; i++) {
+      const angle = (i / forestCount) * Math.PI * 2;
+      const radius = cityRadius * 0.72 + (i % 3) * 6;
       const treeType = forestTypes[i % forestTypes.length];
       const forestTree = createNeighborhoodTree(treeType);
 
@@ -693,7 +707,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     for (let b = 0; b < 12; b++) {
       const birdData = create3DBird();
       const angle = (b / 12) * Math.PI * 2;
-      const radius = 30 + Math.random() * 15;
+      const radius = Math.max(30, cityRadius * 0.4) + Math.random() * 15;
       const altitude = 22 + Math.random() * 14;
 
       birdData.group.position.set(Math.cos(angle) * radius, altitude, Math.sin(angle) * radius);
@@ -713,6 +727,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     // 🚗 9. ANIMATED CARS DRIVING ON GRID STREETS
     vehiclesRef.current = [];
     const carColors = ['38bdf8', 'ef4444', '10b981', 'f59e0b', 'a855f7', 'fdcb6e'];
+    const halfWidth = totalGridWidth / 2 + 6;
 
     roadZCoords.forEach((zCoord, cIdx) => {
       const carMesh = createSuburbanCar(carColors[cIdx % carColors.length]);
@@ -723,7 +738,7 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
         speed: 0.12 + Math.random() * 0.08,
         direction: 'x',
         pathCoord: zCoord,
-        currentPos: -42 + (cIdx * 10)
+        currentPos: -halfWidth + (cIdx * 8) % (totalGridWidth + 12)
       });
     });
 
@@ -945,9 +960,10 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
       });
 
       // Animate Vehicles driving on grid streets
+      const halfW = totalGridWidth / 2 + 6;
       vehiclesRef.current.forEach((v) => {
         v.currentPos += v.speed;
-        if (v.currentPos > 42) v.currentPos = -42;
+        if (v.currentPos > halfW) v.currentPos = -halfW;
         v.mesh.position.set(v.currentPos, 0.05, v.pathCoord);
       });
 
@@ -1009,11 +1025,13 @@ export const CityCanvas: React.FC<CityCanvasProps> = ({
     playSound('click');
     if (!cameraRef.current) return;
     if (preset === 'overview') {
-      cameraRef.current.position.set(54, 44, 62);
+      const overviewDist = Math.max(65, Math.sqrt(projects.length) * 9.5);
+      cameraRef.current.position.set(overviewDist * 0.85, overviewDist * 0.7, overviewDist * 0.95);
     } else if (preset === 'street') {
       cameraRef.current.position.set(22, 6, 28);
     } else if (preset === 'drone') {
-      cameraRef.current.position.set(0, 68, 1);
+      const droneDist = Math.max(68, Math.sqrt(projects.length) * 10);
+      cameraRef.current.position.set(0, droneDist, 1);
     }
     cameraRef.current.lookAt(0, 4, 0);
   };

@@ -40,7 +40,7 @@ export async function syncGitHubRepositoriesWithDB(): Promise<{ success: boolean
       const userRes = await fetch('https://api.github.com/users/prottoybiswas01/repos?sort=updated&per_page=100');
       if (userRes.ok) {
         const data = await userRes.json();
-        if (Array.isArray(data)) repos = data;
+        if (Array.isArray(data) && data.length > 0) repos = data;
       }
     } catch (e) {}
 
@@ -50,11 +50,56 @@ export async function syncGitHubRepositoriesWithDB(): Promise<{ success: boolean
         const searchRes = await fetch('https://api.github.com/search/repositories?q=user:prottoybiswas01&per_page=100');
         if (searchRes.ok) {
           const searchData = await searchRes.json();
-          if (searchData.items && Array.isArray(searchData.items)) {
+          if (searchData.items && Array.isArray(searchData.items) && searchData.items.length > 0) {
             repos = searchData.items;
           }
         }
       } catch (e) {}
+    }
+
+    // 3. HTML Scraping Fallback (Bypasses GitHub REST API rate limits completely!)
+    if (!Array.isArray(repos) || repos.length === 0) {
+      try {
+        const scrapedMap = new Map();
+        for (let page = 1; page <= 6; page++) {
+          const pageRes = await fetch(`https://github.com/prottoybiswas01?tab=repositories&page=${page}`);
+          if (!pageRes.ok) break;
+          const html = await pageRes.text();
+          const repoBlockRegex = /href="\/prottoybiswas01\/([^"\/]+)"\s+itemprop="name codeRepository"[\s\S]*?<\/li>/g;
+          const blocks = [...html.matchAll(repoBlockRegex)];
+          if (blocks.length === 0) break;
+
+          for (const b of blocks) {
+            const name = b[1];
+            if (scrapedMap.has(name)) continue;
+
+            const blockHtml = b[0];
+            const langMatch = blockHtml.match(/itemprop="programmingLanguage">([^<]+)<\/span>/);
+            const language = langMatch ? langMatch[1].trim() : '';
+
+            const descMatch = blockHtml.match(/itemprop="description">([^<]+)<\/p>/);
+            const description = descMatch ? descMatch[1].trim() : '';
+
+            const hash = name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+
+            scrapedMap.set(name, {
+              id: hash,
+              name,
+              full_name: `prottoybiswas01/${name}`,
+              html_url: `https://github.com/prottoybiswas01/${name}`,
+              description,
+              language,
+              stargazers_count: 0,
+              size: 50,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          }
+        }
+        repos = Array.from(scrapedMap.values());
+      } catch (scrapeErr) {
+        console.error('Client side scraper fallback failed:', scrapeErr);
+      }
     }
 
     if (Array.isArray(repos) && repos.length > 0) {

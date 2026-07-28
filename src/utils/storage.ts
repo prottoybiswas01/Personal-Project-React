@@ -13,10 +13,26 @@ export const getStoredPortfolioData = (): PortfolioData => {
       if (!profile.avatarUrl || profile.avatarUrl.includes('unsplash.com')) {
         profile.avatarUrl = '/prottoy_profile.png';
       }
+
+      // Merge projects: ensure all GitHub initial projects exist alongside saved projects
+      const savedProjects = Array.isArray(parsed.projects) ? parsed.projects : [];
+      const mergedProjectsMap = new Map();
+      
+      initialPortfolioData.projects.forEach(p => mergedProjectsMap.set(p.id, p));
+      savedProjects.forEach((p: any) => {
+        if (mergedProjectsMap.has(p.id)) {
+          mergedProjectsMap.set(p.id, { ...mergedProjectsMap.get(p.id), ...p });
+        } else {
+          mergedProjectsMap.set(p.id, p);
+        }
+      });
+      const projects = Array.from(mergedProjectsMap.values()).sort((a: any, b: any) => b.commitsCount - a.commitsCount);
+
       return {
         ...initialPortfolioData,
         ...parsed,
         profile,
+        projects,
         cityConfig: { ...initialPortfolioData.cityConfig, ...(parsed.cityConfig || {}) },
       };
     }
